@@ -56,7 +56,6 @@
        (filter (complement first))
        (map second)
        (map utils/fix-win-path!)
-       (doall)
        (vec)))
 
 (defmethod handle :readdir [_window [_ dir]]
