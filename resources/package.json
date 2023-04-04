@@ -20,7 +20,7 @@
     "forge": "./forge.config.js"
   },
   "dependencies": {
-    "better-sqlite3": "8.0.1",
+    "better-sqlite3": "8.2.0",
     "chokidar": "^3.5.1",
     "dugite": "1.108.0",
     "electron-dl": "3.3.0",
