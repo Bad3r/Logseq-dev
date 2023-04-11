@@ -13,7 +13,7 @@
 ;; TODO: explore different solutions for different platforms
 ;; 1. https://github.com/Axosoft/nsfw
 
-(defonce polling-interval 10000)
+(defonce polling-interval 20000)
 ;; dir -> Watcher
 (defonce *file-watcher (atom {})) ;; val: [watcher watcher-del-f]
 
