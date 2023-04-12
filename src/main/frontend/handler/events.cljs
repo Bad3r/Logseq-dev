@@ -377,7 +377,7 @@
                   (not= (util/trim-safe disk-content) (util/trim-safe db-content)))
          (state/set-modal! #(diff/local-file repo path disk-content db-content)
                            {:label "diff__cp"})))
-     10000))) ; 1000 ms (1 second) delay
+     20000))) ; 1000 ms (1 second) delay
 
 ;; Hook on a graph is ready to be shown to the user.
 ;; It's different from :graph/restored, as :graph/restored is for window reloaded
