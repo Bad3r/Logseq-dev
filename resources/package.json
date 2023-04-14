@@ -29,7 +29,7 @@
     "electron-window-state": "5.0.3",
     "fs-extra": "9.1.0",
     "node-fetch": "2.6.7",
-    "open": "7.3.1",
+    "open": "7.4.2",
     "semver": "7.3.5",
     "update-electron-app": "2.0.1",
     "extract-zip": "2.0.1",
