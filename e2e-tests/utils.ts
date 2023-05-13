@@ -215,7 +215,8 @@ export async function navigateToStartOfBlock(page: Page, block: Block) {
 }
 
 /**
- * Selects a certain length of text in a textarea, starting from a specified number of characters from the end of the text.
+ * Selects a certain length of text in a textarea,
+ * starting from a specified number of characters from the end of the text.
  * @param {Page} page - The Page object.
  * @param {number} shiftBackward - The number of characters from the end of the text to start the selection.
  * @param {number} selectionLength - The number of characters to select.

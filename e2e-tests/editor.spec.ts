@@ -859,3 +859,62 @@ test('apply and remove strikethrough formatting to a word connected with a speci
   const selection = await getSelection(page)
   expect(selection).toBe('ipsum')
 })
+
+test('apply and remove all formatting to a word connected with a special character', async ({
+  page,
+  block,
+}) => {
+  await createRandomPage(page)
+
+  await block.mustFill('Lorem ipsum-dolor sit.')
+
+  // Select 'ipsum'
+  await selectText(page, 16, 5)
+
+  // Apply italic formatting
+  await page.keyboard.press(modKey + '+i')
+  await expect(page.locator('textarea >> nth=0')).toHaveText(
+    'Lorem *ipsum*-dolor sit.'
+  )
+
+  // Re-select 'ipsum'
+  await selectText(page, 6, 7)
+
+  // Apply strikethrough formatting
+  await page.keyboard.press(modKey + '+Shift+s')
+  await expect(page.locator('textarea >> nth=0')).toHaveText(
+    'Lorem ~~*ipsum*~~-dolor sit.'
+  )
+  // select '~~ipsum~~'
+  await selectText(page, 9, 11)
+
+  // Apply bold formatting
+  await page.keyboard.press(modKey + '+b')
+  await expect(page.locator('textarea >> nth=0')).toHaveText(
+    'Lorem **~~*ipsum*~~**-dolor sit.'
+  )
+
+  await selectText(page, 8, 5)
+
+  // Remove italic formatting
+  await page.keyboard.press(modKey + '+i')
+  await expect(page.locator('textarea >> nth=0')).toHaveText(
+    'Lorem **~~ipsum~~**-dolor sit.'
+  )
+
+  // Remove strikethrough formatting
+  await page.keyboard.press(modKey + '+Shift+s')
+  await expect(page.locator('textarea >> nth=0')).toHaveText(
+    'Lorem **ipsum**-dolor sit.'
+  )
+
+  // Remove bold formatting
+  await page.keyboard.press(modKey + '+b')
+  await expect(page.locator('textarea >> nth=0')).toHaveText(
+    'Lorem ipsum-dolor sit.'
+  )
+
+  const selection = await getSelection(page)
+
+  expect(selection).toBe('ipsum')
+})
