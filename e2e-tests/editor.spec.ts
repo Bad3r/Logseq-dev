@@ -763,9 +763,9 @@ test('apply bold formatting to the entire block', async ({ page, block }) => {
   // Verify cursor position
   const cursorPosition = await getCursorPos(page)
 
-  // Considering 'Lorem ipsum-dolor sit.' is 26 characters long
+  // Considering 'Lorem ipsum-dolor sit.' is 22 characters long
   // Cursor should be at the end of the text and before the end of the formatting characters
-  expect(cursorPosition).toBe(26)
+  expect(cursorPosition).toBe(24)
 })
 
 test('apply and remove bold formatting to a word connected with a special character', async ({
