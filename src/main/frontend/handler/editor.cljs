@@ -1525,7 +1525,12 @@
           (keys autopair-map)))
 
 (def autopair-when-selected
-  #{"*" "^" "_" "=" "+" "/"})
+  #{"*"
+    "_"
+    "^"
+    "="
+    "/"
+    "+"})
 
 (def delete-map
   (assoc autopair-map

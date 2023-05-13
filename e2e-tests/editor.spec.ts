@@ -918,3 +918,91 @@ test('apply and remove all formatting to a word connected with a special charact
 
   expect(selection).toBe('ipsum')
 })
+
+test('parentheses auto-pairing', async ({ page, block }) => {
+  await createRandomPage(page)
+
+  // Fill the first block with an open parenthesis
+  await block.mustType('(')
+
+  // Verify that a closing parenthesis was automatically added
+  await expect(page.locator('textarea >> nth=0')).toHaveText('()')
+
+  // Verify that the cursor is between the parentheses
+  const cursorPosition = await getCursorPos(page)
+  expect(cursorPosition).toBe(1)
+})
+
+
+test('square brackets auto-pairing', async ({ page, block }) => {
+  await createRandomPage(page)
+
+  // Fill the first block with an open square bracket
+  await block.mustType('[')
+
+  // Verify that a closing square bracket was automatically added
+  await expect(page.locator('textarea >> nth=0')).toHaveText('[]')
+
+  // Verify that the cursor is between the square brackets
+  const cursorPosition = await getCursorPos(page)
+  expect(cursorPosition).toBe(1)
+})
+
+test('curly brackets auto-pairing', async ({ page, block }) => {
+  await createRandomPage(page)
+
+  // Fill the first block with an open curly bracket
+  await block.mustType('{')
+
+  // Verify that a closing curly bracket was automatically added
+  await expect(page.locator('textarea >> nth=0')).toHaveText('{}')
+
+  // Verify that the cursor is between the curly brackets
+  const cursorPosition = await getCursorPos(page)
+  expect(cursorPosition).toBe(1)
+})
+
+test('backtick auto-pairing', async ({ page, block }) => {
+  await createRandomPage(page)
+
+  // Fill the first block with an open backtick
+  await block.mustType('`')
+
+  // Verify that a closing backtick was automatically added
+  await expect(page.locator('textarea >> nth=0')).toHaveText('``')
+
+  // Verify that the cursor is between the backticks
+  const cursorPosition = await getCursorPos(page)
+  expect(cursorPosition).toBe(1)
+})
+
+test('Only auto-pair asterisk with text selection', async ({
+  page,
+  block,
+}) => {
+  await createRandomPage(page)
+
+  // Type an asterisk
+  await block.mustType('*')
+
+  // Verify that an additional asterisk was not automatically added
+  await expect(page.locator('textarea >> nth=0')).toHaveText('*')
+
+  // remove asterisk
+  await block.mustType('Backspace')
+
+  // add text
+  await block.mustType('Lorem')
+  // select text
+  await page.keyboard.press(modKey + '+a')
+
+  // Type an asterisk
+  await block.mustType('*')
+
+  // Verify that an additional asterisk was automatically added around 'ipsum'
+  await expect(page.locator('textarea >> nth=0')).toHaveText('*Lorem*')
+
+  // Verify that the cursor is at the end of 'ipsum'
+  const cursorPosition = await getCursorPos(page)
+  expect(cursorPosition).toBe('*Lorem*'.length)
+})
