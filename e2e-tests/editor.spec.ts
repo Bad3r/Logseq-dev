@@ -1,6 +1,13 @@
 import { expect } from '@playwright/test'
 import { test } from './fixtures'
-import { createRandomPage, enterNextBlock, modKey, selectText, getSelection, getCursorPos } from './utils'
+import {
+  createRandomPage,
+  enterNextBlock,
+  modKey,
+  selectText,
+  getSelection,
+  getCursorPos,
+} from './utils'
 import { dispatch_kb_events } from './util/keyboard-events'
 import * as kb_events from './util/keyboard-events'
 
@@ -952,155 +959,156 @@ test('apply and remove strikethrough formatting to a word connected with a speci
   expect(selection).toBe('ipsum')
 })
 
-test('apply underline formatting with empty selection', async ({
-  page,
-  block,
-}) => {
-  await createRandomPage(page)
+// ! Underline formatting is not supported yet; will be introduced in #9245
+// test('apply underline formatting with empty selection', async ({
+//   page,
+//   block,
+// }) => {
+//   await createRandomPage(page)
 
-  await block.mustFill('Lorem ')
+//   await block.mustFill('Lorem ')
 
-  // Apply underline formatting
-  await page.keyboard.press(modKey + '+u')
+//   // Apply underline formatting
+//   await page.keyboard.press(modKey + '+u')
 
-  await expect(page.locator('textarea >> nth=0')).toHaveText('Lorem <u></u>')
+//   await expect(page.locator('textarea >> nth=0')).toHaveText('Lorem <u></u>')
 
-  // Verify cursor position
-  const cursorPosition = await getCursorPos(page)
+//   // Verify cursor position
+//   const cursorPosition = await getCursorPos(page)
 
-  // Considering 'Lorem ' is 6 characters long and '<u></u>' is 7 characters long
-  // the expected cursor position should be 6 + 3 = 9
-  expect(cursorPosition).toBe(9)
-})
+//   // Considering 'Lorem ' is 6 characters long and '<u></u>' is 7 characters long
+//   // the expected cursor position should be 6 + 3 = 9
+//   expect(cursorPosition).toBe(9)
+// })
 
-test('apply underline formatting to the entire block', async ({
-  page,
-  block,
-}) => {
-  await createRandomPage(page)
+// test('apply underline formatting to the entire block', async ({
+//   page,
+//   block,
+// }) => {
+//   await createRandomPage(page)
 
-  await block.mustFill('Lorem ipsum-dolor sit.')
+//   await block.mustFill('Lorem ipsum-dolor sit.')
 
-  // Select the entire block
-  await page.keyboard.press(modKey + '+a')
+//   // Select the entire block
+//   await page.keyboard.press(modKey + '+a')
 
-  // Apply strikethrough formatting
-  await page.keyboard.press(modKey + '+u')
+//   // Apply strikethrough formatting
+//   await page.keyboard.press(modKey + '+u')
 
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    '<u>Lorem ipsum-dolor sit.</u>'
-  )
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     '<u>Lorem ipsum-dolor sit.</u>'
+//   )
 
-  // Verify cursor position
-  const cursorPosition = await getCursorPos(page)
-  expect(cursorPosition).toBe(29)
-})
+//   // Verify cursor position
+//   const cursorPosition = await getCursorPos(page)
+//   expect(cursorPosition).toBe(29)
+// })
 
-test('apply and remove underline formatting to a word connected with a special character', async ({
-  page,
-  block,
-}) => {
-  await createRandomPage(page)
+// test('apply and remove underline formatting to a word connected with a special character', async ({
+//   page,
+//   block,
+// }) => {
+//   await createRandomPage(page)
 
-  await block.mustFill('Lorem ipsum-dolor sit.')
+//   await block.mustFill('Lorem ipsum-dolor sit.')
 
-  // Select 'ipsum'
-  await selectText(page, 16, 5)
+//   // Select 'ipsum'
+//   await selectText(page, 16, 5)
 
-  // Apply underline formatting
-  await page.keyboard.press(modKey + '+u')
+//   // Apply underline formatting
+//   await page.keyboard.press(modKey + '+u')
 
-  // Verify that 'ipsum' is underlined
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem <u>ipsum</u>-dolor sit.'
-  )
+//   // Verify that 'ipsum' is underlined
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem <u>ipsum</u>-dolor sit.'
+//   )
 
-  // Re-select 'ipsum'
-  await selectText(page, 9, 5)
+//   // Re-select 'ipsum'
+//   await selectText(page, 9, 5)
 
-  // Remove underline formatting
-  await page.keyboard.press(modKey + '+u')
+//   // Remove underline formatting
+//   await page.keyboard.press(modKey + '+u')
 
-  // Verify that 'ipsum' is no longer underlined and is still selected
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem ipsum-dolor sit.'
-  )
+//   // Verify that 'ipsum' is no longer underlined and is still selected
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem ipsum-dolor sit.'
+//   )
 
-  // Verify the word 'ipsum' is still selected
-  const selection = await getSelection(page)
-  expect(selection).toBe('ipsum')
-})
+//   // Verify the word 'ipsum' is still selected
+//   const selection = await getSelection(page)
+//   expect(selection).toBe('ipsum')
+// })
 
-test('apply and remove all formatting to a word connected with a special character', async ({
-  page,
-  block,
-}) => {
-  await createRandomPage(page)
+// test('apply and remove all formatting to a word connected with a special character', async ({
+//   page,
+//   block,
+// }) => {
+//   await createRandomPage(page)
 
-  await block.mustFill('Lorem ipsum-dolor sit.')
+//   await block.mustFill('Lorem ipsum-dolor sit.')
 
-  // Select 'ipsum'
-  await selectText(page, 16, 5)
+//   // Select 'ipsum'
+//   await selectText(page, 16, 5)
 
-  // Apply italic formatting
-  await page.keyboard.press(modKey + '+i')
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem *ipsum*-dolor sit.'
-  )
+//   // Apply italic formatting
+//   await page.keyboard.press(modKey + '+i')
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem *ipsum*-dolor sit.'
+//   )
 
-  // Re-select '*ipsum*'
-  await selectText(page, 7, 7)
+//   // Re-select '*ipsum*'
+//   await selectText(page, 7, 7)
 
-  // Apply underline formatting
-  await page.keyboard.press(modKey + '+u')
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem <u>*ipsum*</u>-dolor sit.'
-  )
+//   // Apply underline formatting
+//   await page.keyboard.press(modKey + '+u')
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem <u>*ipsum*</u>-dolor sit.'
+//   )
 
-  // select '<u>*ipsum*</u>'
-  await selectText(page, 14, 14)
+//   // select '<u>*ipsum*</u>'
+//   await selectText(page, 14, 14)
 
-  // Apply strikethrough formatting
-  await page.keyboard.press(modKey + '+Shift+s')
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem ~~<u>*ipsum*</u>~~-dolor sit.'
-  )
-  // select '~~<u>*ipsum*</u>~~'
-  await selectText(page, 19, 19)
+//   // Apply strikethrough formatting
+//   await page.keyboard.press(modKey + '+Shift+s')
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem ~~<u>*ipsum*</u>~~-dolor sit.'
+//   )
+//   // select '~~<u>*ipsum*</u>~~'
+//   await selectText(page, 19, 19)
 
-  // Apply bold formatting
-  await page.keyboard.press(modKey + '+b')
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem **~~<u>*ipsum*</u>~~**-dolor sit.'
-  )
-  // select '**~~<u>*ipsum*</u>~~**'
-  await selectText(page, 14, 5)
+//   // Apply bold formatting
+//   await page.keyboard.press(modKey + '+b')
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem **~~<u>*ipsum*</u>~~**-dolor sit.'
+//   )
+//   // select '**~~<u>*ipsum*</u>~~**'
+//   await selectText(page, 14, 5)
 
-  // Remove italic formatting
-  await page.keyboard.press(modKey + '+i')
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem **~~<u>ipsum</u>~~**-dolor sit.'
-  )
+//   // Remove italic formatting
+//   await page.keyboard.press(modKey + '+i')
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem **~~<u>ipsum</u>~~**-dolor sit.'
+//   )
 
-  // Remove underline formatting
-  await page.keyboard.press(modKey + '+u')
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem **~~ipsum~~**-dolor sit.'
-  )
+//   // Remove underline formatting
+//   await page.keyboard.press(modKey + '+u')
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem **~~ipsum~~**-dolor sit.'
+//   )
 
-  // Remove strikethrough formatting
-  await page.keyboard.press(modKey + '+Shift+s')
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem **ipsum**-dolor sit.'
-  )
+//   // Remove strikethrough formatting
+//   await page.keyboard.press(modKey + '+Shift+s')
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem **ipsum**-dolor sit.'
+//   )
 
-  // Remove bold formatting
-  await page.keyboard.press(modKey + '+b')
-  await expect(page.locator('textarea >> nth=0')).toHaveText(
-    'Lorem ipsum-dolor sit.'
-  )
+//   // Remove bold formatting
+//   await page.keyboard.press(modKey + '+b')
+//   await expect(page.locator('textarea >> nth=0')).toHaveText(
+//     'Lorem ipsum-dolor sit.'
+//   )
 
-  const selection = await getSelection(page)
+//   const selection = await getSelection(page)
 
-  expect(selection).toBe('ipsum')
-})
+//   expect(selection).toBe('ipsum')
+// })
