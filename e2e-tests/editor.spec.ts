@@ -1107,8 +1107,9 @@ test('Only auto-pair asterisk with text selection', async ({
   // Verify that an additional asterisk was automatically added around 'ipsum'
   await expect(page.locator('textarea >> nth=0')).toHaveText('*Lorem*')
 
-  // Verify 'Lorem' is selected
-  const selection = await getSelection(page)
+  const selection = await test.step('Verify selection', async () => {
+    return await getSelection(page)
+  })
   expect(selection).toBe('Lorem')
 })
 
@@ -1135,8 +1136,9 @@ test('Only auto-pair underscore with text selection', async ({ page, block }) =>
   // Verify that an additional asterisk was automatically added around 'ipsum'
   await expect(page.locator('textarea >> nth=0')).toHaveText('_Lorem_')
 
-  // Verify 'Lorem' is selected
-  const selection = await getSelection(page)
+  const selection = await test.step('Verify selection', async () => {
+    return await getSelection(page)
+  })
   expect(selection).toBe('Lorem')
 })
 
@@ -1163,36 +1165,42 @@ test('Only auto-pair ^ symbol with text selection', async ({ page, block }) => {
   // Verify that an additional symbol was automatically added around 'ipsum'
   await expect(page.locator('textarea >> nth=0')).toHaveText('^Lorem^')
 
-  // Verify 'Lorem' is selected
-  const selection = await getSelection(page)
+  const selection = await test.step('Verify selection', async () => {
+    return await getSelection(page)
+  })
   expect(selection).toBe('Lorem')
 })
 
 test('Only auto-pair = symbol with text selection', async ({ page, block }) => {
   await createRandomPage(page)
 
-  // type the symbol
-  page.type('textarea >> nth=0', '=', { delay: 100 })
+  await test.step('do not auto-pair symbol when selection is empty', async () => {
+    // type the symbol
+    page.type('textarea >> nth=0', '=', { delay: 100 })
 
-  // Verify that an additional sybmol was not automatically added
-  await expect(page.locator('textarea >> nth=0')).toHaveText('=')
+    // Verify that an additional sybmol was not automatically added
+    await expect(page.locator('textarea >> nth=0')).toHaveText('=')
+  })
 
   // remove symbol
   await page.keyboard.press('Backspace')
 
-  // add text
-  await block.mustType('Lorem')
-  // select text
-  await page.keyboard.press(modKey + '+a')
+  await test.step('auto-pair symbol when test is selected', async () => {
+    // add text
+    await block.mustType('Lorem')
+    // select text
+    await page.keyboard.press(modKey + '+a')
 
-  // Type the symbol
-  await page.type('textarea >> nth=0', '=', { delay: 100 })
+    // Type the symbol
+    await page.type('textarea >> nth=0', '=', { delay: 100 })
 
-  // Verify that an additional symbol was automatically added around 'ipsum'
-  await expect(page.locator('textarea >> nth=0')).toHaveText('=Lorem=')
+    // Verify that an additional symbol was automatically added around 'ipsum'
+    await expect(page.locator('textarea >> nth=0')).toHaveText('=Lorem=')
+  })
 
-  // Verify 'Lorem' is selected
-  const selection = await getSelection(page)
+  const selection = await test.step('Verify selection', async () => {
+    return await getSelection(page)
+  })
   expect(selection).toBe('Lorem')
 })
 
@@ -1219,8 +1227,9 @@ test('Only auto-pair / symbol with text selection', async ({ page, block }) => {
   // Verify that an additional symbol was automatically added around 'ipsum'
   await expect(page.locator('textarea >> nth=0')).toHaveText('/Lorem/')
 
-  // Verify 'Lorem' is selected
-  const selection = await getSelection(page)
+  const selection = await test.step('Verify selection', async () => {
+    return await getSelection(page)
+  })
   expect(selection).toBe('Lorem')
 })
 
@@ -1247,7 +1256,8 @@ test('Only auto-pair + symbol with text selection', async ({ page, block }) => {
   // Verify that an additional symbol was automatically added around 'ipsum'
   await expect(page.locator('textarea >> nth=0')).toHaveText('+Lorem+')
 
-  // Verify 'Lorem' is selected
-  const selection = await getSelection(page)
+  const selection = await test.step('Verify selection', async () => {
+    return await getSelection(page)
+  })
   expect(selection).toBe('Lorem')
 })
