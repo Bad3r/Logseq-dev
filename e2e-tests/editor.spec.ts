@@ -860,6 +860,41 @@ test('apply and remove strikethrough formatting to a word connected with a speci
   expect(selection).toBe('ipsum')
 })
 
+test.fixme('apply and remove underline formatting to a word connected with a special character', async ({
+  page,
+  block,
+}) => {
+  await createRandomPage(page)
+
+  await block.mustFill('Lorem ipsum-dolor sit.')
+
+  // Select 'ipsum'
+  await selectText(page, 16, 5)
+
+  // Apply strikethrough formatting
+  await page.keyboard.press(modKey + '+u')
+
+  // Verify that 'ipsum' is strikethrough
+  await expect(page.locator('textarea >> nth=0')).toHaveText(
+    'Lorem <u>ipsum</u>-dolor sit.'
+  )
+
+  // Re-select 'ipsum'
+  await selectText(page, 5, 5)
+
+  // Remove strikethrough formatting
+  await page.keyboard.press(modKey + '+u')
+
+  // Verify that 'ipsum' is no longer strikethrough and is still selected
+  await expect(page.locator('textarea >> nth=0')).toHaveText(
+    'Lorem ipsum-dolor sit.'
+  )
+
+  // Verify the word 'ipsum' is still selected
+  const selection = await getSelection(page)
+  expect(selection).toBe('ipsum')
+})
+
 test('apply and remove all formatting to a word connected with a special character', async ({
   page,
   block,
