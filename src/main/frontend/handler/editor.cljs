@@ -1511,12 +1511,15 @@
    "{" "}"
    "(" ")"
    "`" "`"
+   "\"" "\""
+   "'" "'"
    "~" "~"
    "*" "*"
    "_" "_"
    "^" "^"
    "=" "="
    "/" "/"
+   "%" "%"
    "+" "+"})
 ;; ":" ":"                              ; TODO: only properties editing and org mode tag
 
@@ -1525,6 +1528,7 @@
           (keys autopair-map)))
 
 (def autopair-when-selected
+
   #{"*"
     "_"
     "^"
