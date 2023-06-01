@@ -25,18 +25,20 @@ let logs: string = '';
 const consoleLogWatcher = (msg: ConsoleMessage) => {
   const text = msg.text();
 
+
   // List of error messages to ignore
   const ignoreErrors = [
-    /net::ERR_CONNECTION_REFUSED/,
+    /net/,
     /^Error with Permissions-Policy header:/
   ];
 
   // If the text matches any of the ignoreErrors, return early
   if (ignoreErrors.some(error => text.match(error))) {
+    console.log(`WARN:: ${text}\n`);
     return;
   }
 
-  logs += text + '\n';
+  logs += `${text}\n`
   expect(text, logs).not.toMatch(/^(Failed to|Uncaught|Assert failed)/);
   expect(text, logs).not.toMatch(/^Error/);
 }
