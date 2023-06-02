@@ -128,7 +128,7 @@
 
 (rum/defc tldraw-app
   [page-name block-id]
-  (let [populate-onboarding?  (whiteboard-handler/should-populate-onboarding-whiteboard? page-name)
+  (let [populate-onboarding? (whiteboard-handler/should-populate-onboarding-whiteboard? page-name)
         data (whiteboard-handler/page-name->tldr! page-name)
         [loaded-app set-loaded-app] (rum/use-state nil)
         on-mount (fn [^js tln]
@@ -138,7 +138,8 @@
                      (when-let [^js api (gobj/get tln "api")]
                       (p/then (when populate-onboarding?
                                 (whiteboard-handler/populate-onboarding-whiteboard api))
-                              #(do (state/focus-whiteboard-shape tln block-id)
+                              #(do (whiteboard-handler/cleanup! (.-currentPage tln))
+                                   (state/focus-whiteboard-shape tln block-id)
                                    (set-loaded-app tln))))))]
     (rum/use-effect! (fn []
                        (when (and loaded-app block-id)
