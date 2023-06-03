@@ -94,6 +94,8 @@
                       (.from Buf content)
                       content)]
     (try
+      (when (and (fs/existsSync path) (not (writable? path)))
+        (fs/chmodSync path "644"))
       (fs/writeFileSync path content)
       (fs/statSync path)
       (catch :default e
