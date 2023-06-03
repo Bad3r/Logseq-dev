@@ -88,6 +88,14 @@
 (defmethod handle :readFile [_window [_ path]]
   (utils/read-file path))
 
+(defn writable?
+  [path]
+  (assert (string? path))
+  (try
+    (fs/accessSync path (aget fs "W_OK"))
+    (catch :default _e
+      false)))
+
 (defmethod handle :writeFile [window [_ repo path content]]
   (let [^js Buf (.-Buffer buffer)
         ^js content (if (instance? js/ArrayBuffer content)
