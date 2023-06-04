@@ -1,37 +1,40 @@
 (ns frontend.components.settings
   (:require [clojure.string :as string]
-            [frontend.components.svg :as svg]
-            [frontend.components.plugins :as plugins]
+            [electron.ipc :as ipc]
+            [frontend.colors :as colors]
             [frontend.components.assets :as assets]
+            [frontend.components.conversion :as conversion-component]
+            [frontend.components.file-sync :as fs]
+            [frontend.components.plugins :as plugins]
+            [frontend.components.svg :as svg]
             [frontend.config :as config]
             [frontend.context.i18n :refer [t]]
-            [frontend.storage :as storage]
-            [frontend.spec.storage :as storage-spec]
             [frontend.date :as date]
+            [frontend.db :as db]
             [frontend.dicts :as dicts]
             [frontend.handler :as handler]
             [frontend.handler.config :as config-handler]
+            [frontend.handler.file-sync :as file-sync-handler]
+            [frontend.handler.global-config :as global-config-handler]
             [frontend.handler.notification :as notification]
+            [frontend.handler.plugin :as plugin-handler]
             [frontend.handler.route :as route-handler]
             [frontend.handler.ui :as ui-handler]
             [frontend.handler.user :as user-handler]
-            [frontend.handler.plugin :as plugin-handler]
-            [frontend.handler.file-sync :as file-sync-handler]
-            [frontend.handler.global-config :as global-config-handler]
+            [frontend.mobile.util :as mobile-util]
             [frontend.modules.instrumentation.core :as instrument]
             [frontend.modules.shortcut.data-helper :as shortcut-helper]
+            [frontend.spec.storage :as storage-spec]
             [frontend.state :as state]
+            [frontend.storage :as storage]
             [frontend.ui :as ui]
-            [electron.ipc :as ipc]
-            [promesa.core :as p]
             [frontend.util :refer [classnames web-platform?] :as util]
             [frontend.version :refer [version]]
             [goog.object :as gobj]
+            [goog.string :as gstring]
+            [promesa.core :as p]
             [reitit.frontend.easy :as rfe]
-            [rum.core :as rum]
-            [frontend.mobile.util :as mobile-util]
-            [frontend.db :as db]
-            [frontend.components.conversion :as conversion-component]))
+            [rum.core :as rum]))
 
 (defn toggle
   [label-for name state on-toggle & [detail-text]]
@@ -59,13 +62,13 @@
                (ui/button
                 "Check for updates"
                 :class "text-sm p-1 mr-1"
-                :href "https://github.com/logseq/logseq/releases" )
+                :href "https://github.com/logseq/logseq/releases")
 
                (mobile-util/native-ios?)
                (ui/button
                 "Check for updates"
                 :class "text-sm p-1 mr-1"
-                :href "https://apps.apple.com/app/logseq/id1601013908" )
+                :href "https://apps.apple.com/app/logseq/id1601013908")
 
                (util/electron?)
                (ui/button
@@ -145,7 +148,7 @@
            :height 500}]]])
 
 (defn row-with-button-action
-  [{:keys [left-label action button-label href on-click desc -for]}]
+  [{:keys [left-label action button-label href on-click desc -for stretch]}]
   [:div.it.sm:grid.sm:grid-cols-3.sm:gap-4.sm:items-start
 
    ;; left column
@@ -156,11 +159,12 @@
    ;; right column
    [:div.mt-1.sm:mt-0.sm:col-span-2
     {:style {:display "flex" :gap "0.5rem" :align-items "center"}}
-    [:div (if action action (ui/button
-                              button-label
-                              :class    "text-sm p-1"
-                              :href     href
-                              :on-click on-click))]
+    [:div {:style (when stretch {:width "100%"})} 
+     (if action action (ui/button
+                          button-label
+                          :class    "text-sm p-1"
+                          :href     href
+                          :on-click on-click))]
     (when-not (or (util/mobile?)
                   (mobile-util/native-platform?))
       [:div.text-sm desc])]])
@@ -292,17 +296,64 @@
                              :action     action})))
 
 (defn theme-modes-row [t switch-theme system-theme? dark?]
-  (let [pick-theme [:ul.theme-modes-options
-                    [:li {:on-click (partial state/use-theme-mode! "light")
-                          :class    (classnames [{:active (and (not system-theme?) (not dark?))}])} [:i.mode-light] [:strong "light"]]
-                    [:li {:on-click (partial state/use-theme-mode! "dark")
-                          :class    (classnames [{:active (and (not system-theme?) dark?)}])} [:i.mode-dark] [:strong "dark"]]
-                    [:li {:on-click (partial state/use-theme-mode! "system")
-                          :class    (classnames [{:active system-theme?}])} [:i.mode-system] [:strong "system"]]]]
+  (let [pick-theme-mode [:ul.theme-modes-options
+                         [:li {:on-click (partial state/use-theme-mode! "light")
+                               :class    (classnames [{:active (and (not system-theme?) (not dark?))}])} [:i.mode-light] [:strong "light"]]
+                         [:li {:on-click (partial state/use-theme-mode! "dark")
+                               :class    (classnames [{:active (and (not system-theme?) dark?)}])} [:i.mode-dark] [:strong "dark"]]
+                         [:li {:on-click (partial state/use-theme-mode! "system")
+                               :class    (classnames [{:active system-theme?}])} [:i.mode-system] [:strong "system"]]]]
     (row-with-button-action {:left-label (t :right-side-bar/switch-theme (string/capitalize switch-theme))
                              :-for       "toggle_theme"
-                             :action     pick-theme
+                             :action     pick-theme-mode
                              :desc       (ui/render-keyboard-shortcut (shortcut-helper/gen-shortcut-seq :ui/toggle-theme))})))
+
+(defn theme-row [t dark?]
+  (let [color-accent (state/sub :color/accent)
+        pick-theme [:div.grid {:style {:grid-template-columns "repeat(17, 1fr)" 
+                                       :gap "0.75rem"
+                                       :overflow-x :scroll 
+                                       :width "100%"
+                                       :padding-left "0.25rem"}}
+                    [:div.theme-row--color {:on-click #(state/unset-color-accent!)
+                                            :class (when (nil? color-accent) "selected")}
+                     [:div.theme-row--color-swatch {:style {"--background"        "#0F2A35"
+                                                            "--background-hover"  "#163542"
+                                                            "--background-active" "#274E5E"
+                                                            "--border"            "#0369a1"
+                                                            "--border-hover"      "#38bdf8" ;; TODO what is the hover color?
+                                                            "--border-active"      "#0ea5e9"} ;; TODO what is the hover color?
+                                                           :border-right "1px solid rgba(255,255,255,0.4)"}] 
+                     [:div.text-xs {:style {:margin "0 -0.5rem" 
+                                            :opacity 0.5 
+                                            :height "1rem" 
+                                            :padding "0 0.5rem"}}]]
+                    [:div.theme-row--color-separator]
+                    (for [color colors/color-list
+                          :let [gray (get colors/gray-pairing-map color)]]
+                      [:div.theme-row--color {:on-click #(state/toggle-color-accent! color) 
+                                              :class (when (= color-accent color) "selected")}
+                       [:div.theme-row--color-swatch {:style {"--background"        (str "var(--rx-" (name gray) "-02-alpha)")
+                                                              "--background-hover"  (str "var(--rx-" (name gray) "-03)")
+                                                              "--background-active" (str "var(--rx-" (name gray) "-06)")
+                                                              "--border"            (str "var(--rx-" (name color) "-07)")
+                                                              "--border-hover"      (str "var(--rx-" (name color) "-10)")
+                                                              "--border-active"     (str "var(--rx-" (name color) "-09) ")}}]])]
+                                                              ; "--border-hover"     (str "var(--rx-" (name color) "-08)")}}]
+        display-theme [:button {:style {:background "var(--lx-accent-03)" 
+                                        :border "1px solid var(--lx-accent-07)"
+                                        :color "var(--lx-accent-11)"}}
+                        (if color-accent (name color-accent) "default")]]
+    [:<>
+     (row-with-button-action {:left-label "Logseq color theme"
+                              :-for       "toggle_radix_theme"
+                              :stretch    true
+                              :action     pick-theme})])) 
+     ; (row-with-button-action {:left-label "Preview color theme"
+     ;                          :-for       "display_radix_theme"
+     ;                          :stretch    true
+     ;                          :action     display-theme})])) 
+                             
 
 (defn file-format-row [t preferred-format]
   [:div.it.sm:grid.sm:grid-cols-3.sm:gap-4.sm:items-start
@@ -640,6 +691,7 @@
      (language-row t preferred-language)
      (theme-modes-row t switch-theme system-theme? dark?)
      (when (and (util/electron?) (not util/mac?)) (native-titlebar-row t))
+     (theme-row t dark?)
      (when (config/global-config-enabled?) (edit-global-config-edn))
      (when current-repo (edit-config-edn))
      (when current-repo (edit-custom-css))
@@ -686,20 +738,14 @@
   []
   [:div.panel-wrap
    [:div.text-sm.my-4
-    (ui/admonition
-     :tip
-     [:p "If you have Logseq Sync enabled, you can view a page's edit history directly. This section is for tech-savvy only."])
-    [:span.text-sm.opacity-50.my-4 
-     "To view page's edit history, click the three horizontal dots in the top-right corner and select \"View page history\"."]
-    [:br][:br]
     [:span.text-sm.opacity-50.my-4
-     "For professional users, Logseq also supports using "]
+     "You can view a page's edit history by clicking the three horizontal dots "
+     "in the top-right corner and selecting \"View page history\". "
+     "Logseq uses "]
     [:a {:href "https://git-scm.com/" :target "_blank"}
      "Git"]
     [:span.text-sm.opacity-50.my-4
-     " for version control."]
-    [:span.text-sm.opacity-50.my-4
-     "Use Git at your own risk as general Git issues are not supported by the Logseq team"]]
+     " for version control."]]
    [:br]
    (switch-git-auto-commit-row t)
    (git-auto-commit-seconds t)
@@ -749,6 +795,196 @@
   (row-with-button-action
    {:left-label (t :settings-page/enable-whiteboards)
     :action (whiteboards-enabled-switcher enabled?)}))
+
+(rum/defc settings-account-usage-description [pro-account? graph-usage]
+  (let [count-usage (count graph-usage)
+        count-limit (if pro-account? 10 1)
+        count-percent (js/Math.round (/ count-usage count-limit 0.01))
+        storage-usage (->> (map :used-gbs graph-usage)
+                           (reduce + 0)) 
+        storage-usage-formatted (cond 
+                                  (zero? storage-usage) "0.0"
+                                  (< storage-usage 0.01) "Less than 0.01"
+                                  :else (gstring/format "%.2f" storage-usage))
+        ;; TODO: check logic on this. What are the rules around storage limits?  
+        ;; do we, and should we be able to, give individual users more storage?
+        ;; should that be on a per graph or per user basis?
+        default-storage-limit (if pro-account? 10 0.05)
+        storage-limit (->> (range 0 count-limit)
+                           (map #(get-in graph-usage [% :limit-gbs] default-storage-limit))
+                           (reduce + 0))
+        storage-percent (/ storage-usage storage-limit 0.01)
+        storage-percent-formatted (gstring/format "%.1f" storage-percent)]
+    [:div.text-sm
+     (when pro-account?
+       [:<>
+        (gstring/format "%s of %s synced graphs " count-usage count-limit)
+        [:strong.text-white (gstring/format "(%s%%)" count-percent)]
+        ", "]) 
+     (gstring/format "%sGB of %sGB total storage " storage-usage-formatted storage-limit)
+     [:strong.text-white (gstring/format "(%s%%)" storage-percent-formatted)]]))
+     ; storage-usage-formatted "GB of " storage-limit "GB total storage"
+     ; [:strong.text-white " (" storage-percent-formatted "%)"]]))
+
+
+(rum/defc settings-account-usage-graphs [_pro-account? graph-usage]
+  (when (< 0 (count graph-usage))
+   [:div.grid.gap-3 {:style {:grid-template-columns (str "repeat(" (count graph-usage) ", 1fr)")}}
+    (for [{:keys [name used-percent]} graph-usage
+          :let [color (if (<= 100 used-percent) "bg-red-500" "bg-blue-500")]]
+     [:div.rounded-full.w-full.h-2 {:class "bg-black/50" 
+                                    :tooltip name}
+      [:div.rounded-full.h-2 {:class color
+                              :style {:width (str used-percent "%") 
+                                      :min-width "0.5rem" 
+                                      :max-width "100%"}}]])]))
+  
+(rum/defc settings-account < rum/reactive
+  []
+  (let [current-graph-uuid (state/sub-current-file-sync-graph-uuid)
+        graph-usage (state/get-remote-graph-usage)
+        current-graph-is-remote? ((set (map :uuid graph-usage)) current-graph-uuid)
+        logged-in? (user-handler/logged-in?)
+        user-info (state/get-user-info)
+        paid-user? (#{"active" "on_trial" "cancelled"} (:LemonStatus user-info))
+        gift-user? (some #{"pro"} (:UserGroups user-info))
+        pro-account? (or paid-user? gift-user?)
+        expiration-date (some-> user-info :LemonEndsAt date/parse-iso)
+        renewal-date (some-> user-info :LemonRenewsAt date/parse-iso)
+        has-subscribed? (some? (:LemonStatus user-info))]
+    [:div.panel-wrap.is-features.mb-8
+     [:div.mt-1.sm:mt-0.sm:col-span-2
+      (cond
+        logged-in?
+        [:div.grid.grid-cols-3.gap-8.pt-2
+         [:div "Current plan"]
+         [:div.col-span-2 
+          [:div {:class "w-full bg-gray-500/10 rounded-lg p-4 flex flex-col gap-4"}
+           [:div.flex.gap-4.items-center
+            (if pro-account?
+              [:div.flex-1 "Pro"]
+              [:div.flex-1 "Free"])
+            (cond 
+              has-subscribed?
+              (ui/button "Manage plan" {:class "p-1 h-8 justify-center"
+                                        :disabled true
+                                        :icon "upload"})
+                                         ; :on-click user-handler/upgrade})
+              (not pro-account?)
+              (ui/button "Upgrade plan" {:class "p-1 h-8 justify-center"
+                                         :icon "upload"
+                                         :on-click user-handler/upgrade})
+              :else nil)]
+           (settings-account-usage-graphs pro-account? graph-usage)
+           (settings-account-usage-description pro-account? graph-usage)
+           (if current-graph-is-remote?
+             (ui/button "Deactivate syncing" {:class "p-1 h-8 justify-center"
+                                              :disabled true
+                                              :background "gray"
+                                              :icon "cloud-off"})
+             (ui/button "Activate syncing" {:class "p-1 h-8 justify-center"
+                                            :background "blue"
+                                            :icon "cloud"
+                                            :on-click #(fs/maybe-onboarding-show :sync-initiate)}))]]
+         (when has-subscribed?
+          [:<>
+           [:div "Billing"]
+           [:div.col-span-2.flex.flex-col.gap-4
+            (cond 
+              ;; If there is no expiration date, print the renewal date
+              (and renewal-date (nil? expiration-date)) 
+              [:div 
+               [:strong.font-semibold "Next billing date: " 
+                (date/get-locale-string renewal-date)]]
+              ;; If the expiration date is in the future, word it as such
+              (< (js/Date.) expiration-date) 
+              [:div
+               [:strong.font-semibold "Pro plan expires on: " 
+                (date/get-locale-string expiration-date)]]
+              ;; Otherwise, ind
+              :else 
+              [:div 
+               [:strong.font-semibold "Pro plan expired on: " 
+                (date/get-locale-string expiration-date)]])
+                               
+            [:div (ui/button "Open invoices" {:class "w-full h-8 p-1 justify-center" 
+                                              :disabled true 
+                                              :background "gray" 
+                                              :icon "receipt"})]]])
+         [:div "Profile"]
+         [:div.col-span-2.grid.grid-cols-2.gap-4
+          [:div.flex.flex-col.gap-2.box-border {:class "basis-1/2"}
+           [:label.text-sm.font-semibold "First name"]
+           [:input.rounded.border.px-2.py-1.box-border {:class "border-blue-500 bg-black/25 w-full"}]]
+          [:div.flex.flex-col.gap-2 {:class "basis-1/2"}
+           [:label.text-sm.font-semibold "Last name"]
+           [:input.rounded.border.px-2.py-1.box-border {:class "border-blue-500 bg-black/25 w-full"}]]
+          [:div.flex-1.flex.flex-col.gap-2.col-span-2
+           [:label.text-sm.font-semibold "Username"]
+           [:input.rounded.border.px-2.py-1.box-border {:class "border-blue-500 bg-black/25" 
+                                                        :value (user-handler/email)}]]]
+         [:div "Authentication"]
+         [:div.col-span-2
+          [:div.grid.grid-cols-2.gap-4
+           [:div (ui/button (t :logout) {:class "p-1 h-8 justify-center w-full"
+                                         :background "gray"
+                                         :icon "logout"
+                                         :on-click user-handler/logout})]
+           [:div (ui/button "Reset password" {:class "p-1 h-8 justify-center w-full"
+                                              :disabled true
+                                              :background "gray"
+                                              :icon "key"
+                                              :on-click user-handler/logout})]
+           [:div.col-span-2 (ui/button "Delete Account" {:class "p-1 h-8 justify-center w-full" 
+                                                         :disabled true
+                                                         :background "red"})]]]] 
+                                            
+        (not logged-in?)
+        [:div.grid.grid-cols-3.gap-8.pt-2
+         [:div "Authentication"]
+         [:div.col-span-2.flex.flex-wrap.gap-4
+          [:div.w-full.text-white "With a Logseq account, you can access cloud-based services like Logseq Sync and alpha/beta features."]
+          [:div.flex-1 (ui/button "Sign up" {:class "h-8 w-full text-center justify-center"
+                                             :on-click (fn []
+                                                         (state/close-settings!)
+                                                         (state/pub-event! [:user/login]))})]
+          [:div.flex-1 (ui/button (t :login) {:icon "login" 
+                                              :class "h-8 w-full text-center justify-center" 
+                                              :background "gray"
+                                              :on-click (fn []
+                                                          (state/close-settings!)
+                                                          (state/pub-event! [:user/login]))})]]
+         [:div.col-span-3.flex.flex-col.gap-4 {:class "bg-black/20 p-4 rounded-lg"}
+          [:div.flex.w-full.items-center
+           [:div {:class "w-1/2 text-lg"} 
+            "Discover the power of " 
+            [:strong {:class "text-white/80"} "Logseq Sync"]]
+           [:div {:class "w-1/2 bg-gradient-to-r from-white/10 to-transparent p-3 rounded-lg flex items-center gap-2 px-5 ml-5"} 
+            [:div.w-3.h-3.rounded-full.bg-green-500]
+            "Synced"]]
+          [:div.flex.w-full.gap-4
+           [:div {:class "w-1/2 bg-black/50 rounded-lg p-4 pt-10 relative flex flex-col gap-4"}
+            [:div.absolute.top-0.left-4.bg-gray-700.uppercase.px-2.py-1.rounded-b-lg.font-bold.text-xs "Free"]
+            [:div
+             [:strong.text-white.text-xl.font-normal "$0"]] 
+            [:div.text-white.font-bold {:class "h-[2.5rem] "} "Get started with basic syncing"]
+            [:ul.text-xs.list-none.m-0.flex.flex-col.gap-0.5
+             [:li "Unlimited unsynced graphs"]
+             [:li "1 synced graph (up to 50MB, notes only)"]
+             [:li "No asset syncing"]
+             [:li "Access to core Logseq features"]]]
+           [:div {:class "w-1/2 bg-black/50 rounded-lg p-4 pt-10 relative flex flex-col gap-4"}
+            [:div.absolute.top-0.left-4.bg-blue-700.uppercase.px-2.py-1.rounded-b-lg.font-bold.text-xs "Pro"]
+            [:div
+             [:strong.text-white.text-xl.font-normal "$10"] 
+             [:span.text-xs.font-base {:class "ml-0.5"} "/ month"]]
+            [:div.text-white.font-bold {:class "h-[2.5rem]"} "Unlock advanced syncing and more"]
+            [:ul.text-xs.list-none.m-0.flex.flex-col.gap-0.5
+             [:li "Unlimited unsynced graphs"]
+             [:li "10 synced graphs (up to 5GB each)"]
+             [:li "Sync assets up to 100MB per file"]
+             [:li "Early access to alpha/beta features"]
+             [:li "Upcoming cloud-based features, including Logseq Publish"]]]]]])]]))
 
 (rum/defc settings-features < rum/reactive
   []
@@ -809,7 +1045,7 @@
           [:a.mx-1 {:href "https://blog.logseq.com/how-to-setup-and-use-logseq-sync/"
                     :target "_blank"}
            "here"]
-          "for instructions on how to set up and use Sync."]]])
+          "for instructions on how to set up and use Sync."]]])]))
 
      ;; (when-not web-platform?
      ;;   [:<>
@@ -820,10 +1056,12 @@
      ;;     {:class (when-not user-handler/alpha-user? "opacity-50 pointer-events-none cursor-not-allowed")}
      ;;     ;; features
      ;;     ]])
-     ]))
+     
+
+(def DEFAULT-ACTIVE-TAB-STATE (if config/ENABLE-SETTINGS-ACCOUNT-TAB [:account :account] [:general :general]))
 
 (rum/defcs settings
-  < (rum/local [:general :general] ::active)
+  < (rum/local DEFAULT-ACTIVE-TAB-STATE ::active)
     {:will-mount
      (fn [state]
        (state/load-app-user-cfgs)
@@ -841,25 +1079,30 @@
         *active (::active state)]
 
     [:div#settings.cp__settings-main
-     [:header
-      [:h1.title (t :settings)]]
 
      [:div.cp__settings-inner
 
       [:aside.md:w-64 {:style {:min-width "10rem"}}
+       [:header.cp__settings-header
+        (ui/icon "settings")
+        [:h1.cp__settings-modal-title (t :settings)]]
        [:ul.settings-menu
         (for [[label id text icon]
-              [[:general "general" (t :settings-page/tab-general) (ui/icon "adjustments")]
+              [(when config/ENABLE-SETTINGS-ACCOUNT-TAB
+                [:account "account" (t :settings-page/tab-account) (ui/icon "user-circle")])
+               [:general "general" (t :settings-page/tab-general) (ui/icon "adjustments")]
                [:editor "editor" (t :settings-page/tab-editor) (ui/icon "writing")]
 
-               (when (util/electron?)
+               (when (and
+                      (util/electron?)
+                      (not (file-sync-handler/synced-file-graph? current-repo)))
                  [:git "git" (t :settings-page/tab-version-control) (ui/icon "history")])
 
                ;; (when (util/electron?)
                ;;   [:assets "assets" (t :settings-page/tab-assets) (ui/icon "box")])
 
                [:advanced "advanced" (t :settings-page/tab-advanced) (ui/icon "bulb")]
-               [:features "features" (t :settings-page/tab-features) (ui/icon "app-feature")]
+               [:features "features" (t :settings-page/tab-features) (ui/icon "square-asterisk")]
 
                (when plugins-of-settings
                  [:plugins-setting "plugins" (t :settings-of-plugins) (ui/icon "puzzle")])]]
@@ -871,11 +1114,13 @@
               :on-click #(reset! *active [label (first @*active)])}
 
              [:a.flex.items-center.settings-menu-link
-             {:data-id id}
+              {:data-id id}
               icon
               [:strong text]]]))]]
 
       [:article
+       [:header.cp__settings-header
+        [:h1.cp__settings-category-title (name (first @*active))]]
 
        (case (first @*active)
 
@@ -884,6 +1129,9 @@
            (state/pub-event! [:go/plugins-settings (:id (first plugins-of-settings))])
            (reset! *active [label label])
            nil)
+
+         :account 
+         (settings-account)
 
          :general
          (settings-general current-repo)

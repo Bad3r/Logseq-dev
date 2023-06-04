@@ -7,6 +7,7 @@
             [clojure.string :as string]
             [dommy.core :as dom]
             [electron.ipc :as ipc]
+            [frontend.colors :as colors]
             [frontend.mobile.util :as mobile-util]
             [frontend.storage :as storage]
             [frontend.spec.storage :as storage-spec]
@@ -286,7 +287,10 @@
      :whiteboard/pending-tx-data            {}
      :history/page-only-mode?               false
      ;; db tx-id -> editor cursor
-     :history/tx->editor-cursor             {}})))
+     :history/tx->editor-cursor             {}
+
+     ;; new theming 
+     :color/accent                           nil})))
 
 ;; Block ast state
 ;; ===============
@@ -759,6 +763,18 @@ Similar to re-frame subscriptions"
   [uuid]
   (when-let [graphs (seq (get-in @state [:file-sync/remote-graphs :graphs]))]
     (some #(when (= (:GraphUUID %) (str uuid)) %) graphs)))
+
+(defn get-remote-graph-usage 
+  []
+  (when-let [graphs (seq (get-in @state [:file-sync/remote-graphs :graphs]))]
+    (->> graphs
+         (map #(hash-map :uuid (:GraphUUID %)
+                         :name (:GraphName %)
+                         :used-gbs (/ (:GraphStorageUsage %) 1024 1024 1024)
+                         :limit-gbs (/ (:GraphStorageLimit %) 1024 1024 1024)
+                         :used-percent (/ (:GraphStorageUsage %) (:GraphStorageLimit %) 0.01)))
+         (map #(assoc % :free-gbs (- (:limit-gbs %) (:used-gbs %))))
+         (vec))))
 
 (defn delete-remote-graph!
   [repo]
@@ -2098,6 +2114,24 @@ Similar to re-frame subscriptions"
       (when (seq groups)
         (storage/set :user-groups groups)))))
 
+(defn get-user-info []
+  (sub :user/info))
+
 (defn clear-user-info!
   []
   (storage/remove :user-groups))
+
+(defn toggle-color-accent! [color]
+  (if (= color (get @state :color/accent))
+    (do (swap! state assoc :color/accent nil)
+        (colors/unset-radix))
+    (do (swap! state assoc :color/accent color)
+        (colors/set-radix color))))
+
+(defn unset-color-accent! []
+  (swap! state assoc :color/accent nil)
+  (colors/unset-radix))
+ 
+
+(defn get-color-accent []
+  (get @state :color/accent))
