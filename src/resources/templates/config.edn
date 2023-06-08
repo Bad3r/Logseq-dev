@@ -77,6 +77,10 @@
  ;; Default value: false
  ;; :feature/disable-scheduled-and-deadline-query? false
 
+ ;; Disable automatic chmod of files.
+ ;; Default value:  false
+ ;; :feature/disable-automatic-chmod? false
+
  ;; Specify the number of days displayed in the future for
  ;; the 'scheduled tasks and deadlines' query.
  ;; Example usage:
