@@ -28,7 +28,6 @@
             [electron.state :as state]
             [electron.utils :as utils]
             [electron.window :as win]
-            [main.frontend.state :as logseq-state]
             [logseq.common.graph :as common-graph]
             [promesa.core :as p]))
 
@@ -103,8 +102,8 @@
                       (.from Buf content)
                       content)]
     (try
-      (if-not (logseq-state/auto-chmod-disabled?) (when (and (fs/existsSync path) (not (writable? path)))
-        (fs/chmodSync path "644")) (nil))
+      (when (and (fs/existsSync path) (not (writable? path)))
+        (fs/chmodSync path "644"))
       (fs/writeFileSync path content)
       (fs/statSync path)
       (catch :default e
