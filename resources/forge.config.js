@@ -4,6 +4,10 @@ module.exports = {
   packagerConfig: {
     name: 'Logseq',
     icon: './icons/logseq_big_sur.icns',
+    appBundleId: 'com.logseq.app',
+    appCategoryType: 'public.app-category.productivity',
+    appCategoryTypeName: 'Productivity',
+    asar: true,
     protocols: [
       {
         "protocol": "logseq",
