@@ -288,10 +288,10 @@
   dependencies:
     tslib "^2.1.0"
 
-"@capacitor/core@^4.0.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@capacitor/core/-/core-4.2.0.tgz#608285d4d8d60388940fc8f25dc1576aa99187e4"
-  integrity sha512-kHKn6693Yt9TWfuJ0Q+fyxYCpYAvVMKdu3t500seMEfdgNlF6BGaX5GbOnXkU4cnM9p+sIhRiwXv8Iqwm0E+NA==
+"@capacitor/core@^4.8.0":
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/@capacitor/core/-/core-4.8.0.tgz#3d5e7403539b0ce20b62164e5c5bf3d652cfe976"
+  integrity sha512-hFgLi1bGmADMmYMFAaitEsVheF3QgoMU4TrHkMgik51NzHwUq3nBdP5+A9oNS9qe3dEDyegoaHF8X9oJc9v8QQ==
   dependencies:
     tslib "^2.1.0"
 
