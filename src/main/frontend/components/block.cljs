@@ -1576,6 +1576,11 @@
                address (str local_part "@" domain)]
            [:a {:href (str "mailto:" address)} address])
 
+         ["Phone" {:keys [country_code local_number]}]
+         (let [number (if (empty? country_code) local_number
+                        (str country_code local_number))]
+           [:a {:href (str "tel:" number)} number])
+
          ["Nested_link" link]
          (nested-link config html-export? link)
 

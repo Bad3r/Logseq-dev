@@ -5,7 +5,14 @@ const { ipcRenderer, contextBridge, shell, clipboard, webFrame } = require('elec
 const IS_MAC = process.platform === 'darwin'
 const IS_WIN32 = process.platform === 'win32'
 
-const ALLOWED_EXTERNAL_PROTOCOLS = ['https:', 'http:', 'mailto:', 'zotero:', 'file:']
+const ALLOWED_EXTERNAL_PROTOCOLS = [
+  'https:',
+  'http:',
+  'mailto:',
+  'zotero:',
+  'file:',
+  'tel',
+]
 
 function getFilePathFromClipboard () {
   if (IS_WIN32) {
@@ -116,7 +123,7 @@ contextBridge.exposeInMainWorld('apis', {
 
     const dest = path.join(repoPathRoot, to)
     const assetsRoot = path.dirname(dest)
-    
+
     await fs.promises.mkdir(assetsRoot, { recursive: true })
 
     from = from && decodeURIComponent(from || getFilePathFromClipboard())

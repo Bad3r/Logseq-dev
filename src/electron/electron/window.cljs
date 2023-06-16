@@ -122,7 +122,7 @@
   [url default-open]
   (let [URL (.-URL URL)
         parsed-url (try (URL. url) (catch :default _ nil))]
-    (if (and parsed-url (contains? #{"https:" "http:" "mailto:"} (.-protocol parsed-url)))
+    (if (and parsed-url (contains? #{"https:" "http:" "mailto:" "tel:"} (.-protocol parsed-url)))
       (.openExternal shell url)
       (when default-open (default-open url)))))
 
