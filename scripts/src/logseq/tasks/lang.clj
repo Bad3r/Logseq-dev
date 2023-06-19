@@ -166,13 +166,15 @@
    :it #{:plugins}
    :nl #{:plugins :type :left-side-bar/nav-recent-pages :plugin/update}
    :pl #{:port}
-   :pt-BR #{:plugins :right-side-bar/flashcards :settings-page/enable-flashcards}
+   :pt-BR #{:plugins :right-side-bar/flashcards :settings-page/enable-flashcards :page/backlinks
+            :host :settings-page/tab-editor :shortcut.category/plugins :whiteboard/link}
    :pt-PT #{:plugins :settings-of-plugins :plugin/downloads :right-side-bar/flashcards
             :settings-page/enable-flashcards :settings-page/plugin-system}
    :nb-NO #{:port :type :whiteboard :right-side-bar/flashcards :right-side-bar/whiteboards 
             :search-item/whiteboard :settings-page/enable-flashcards :settings-page/enable-whiteboards 
             :settings-page/tab-editor :shortcut.category/whiteboard :whiteboard/medium 
             :whiteboard/twitter-url :whiteboard/youtube-url}
+   :tr #{:help/awesome-logseq}
    })
 
 (defn- validate-languages-dont-have-duplicates
