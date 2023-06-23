@@ -468,7 +468,7 @@
                     (set-enabled! t)
                     (plugin-handler/set-enabled-auto-check-for-updates t)
                     (notification/show!
-                      [:span text [:strong.pl-1 (if t "ON" "OFF")] "!"]
+                      [:span text [:strong.pl-1 (if t "ON" "OFF")] " !"]
                       (if t :success :info))))}
      [:span.pr-3.opacity-80 text]
      (ui/toggle enabled #() true)]))
@@ -1141,58 +1141,11 @@
 (rum/defc hook-ui-fenced-code
   [block content {:keys [render edit] :as _opts}]
 
-  (let [[content1 set-content1!] (rum/use-state content)
-        [editor-active? set-editor-active!] (rum/use-state (string/blank? content))
-        *cm (rum/use-ref nil)
-        *el (rum/use-ref nil)]
-
-    (rum/use-effect!
-      #(set-content1! content)
-      [content])
-
-    (rum/use-effect!
-      (fn []
-        (some-> (rum/deref *el)
-                (.closest ".ui-fenced-code-wrap")
-                (.-classList)
-                (#(if editor-active?
-                    (.add % "is-active")
-                    (.remove % "is-active"))))
-        (when-let [cm (rum/deref *cm)]
-          (.refresh cm)
-          (.focus cm)
-          (.setCursor cm (.lineCount cm) (count (.getLine cm (.lastLine cm))))))
-      [editor-active?])
-
-    (rum/use-effect!
-      (fn []
-        (let [t (js/setTimeout
-                  #(when-let [^js cm (some-> (rum/deref *el)
-                                             (.closest ".ui-fenced-code-wrap")
-                                             (.querySelector ".CodeMirror")
-                                             (.-CodeMirror))]
-                     (rum/set-ref! *cm cm)
-                     (doto cm
-                       (.on "change" (fn []
-                                       (some-> cm (.getDoc) (.getValue) (set-content1!))))))
-                  ;; wait for the cm loaded
-                  1000)]
-          #(js/clearTimeout t)))
-      [])
-
-    [:div.ui-fenced-code-result
-     {:on-mouse-down (fn [e] (when (false? edit) (util/stop e)))
-      :class         (util/classnames [{:not-edit (false? edit)}])
-      :ref           *el}
-     [:<>
-      [:span.actions
-       {:on-mouse-down #(util/stop %)}
-       (ui/button (ui/icon "square-toggle-horizontal" {:size 14})
-                  :on-click #(set-editor-active! (not editor-active?)))
-       (ui/button (ui/icon "source-code" {:size 14})
-                  :on-click #(editor-handler/edit-block! block (count content1) (:block/uuid block)))]
-      (when (fn? render)
-        (js/React.createElement render #js {:content content1}))]]))
+  [:div
+   {:on-mouse-down (fn [e] (when (false? edit) (util/stop e)))
+    :class         (util/classnames [{:not-edit (false? edit)}])}
+   (when (fn? render)
+     (js/React.createElement render #js {:content content}))])
 
 (rum/defc plugins-page
   []

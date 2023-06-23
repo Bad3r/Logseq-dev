@@ -7,6 +7,7 @@
             [clojure.string :as string]
             [dommy.core :as dom]
             [electron.ipc :as ipc]
+            [frontend.colors :as colors]
             [frontend.mobile.util :as mobile-util]
             [frontend.storage :as storage]
             [frontend.spec.storage :as storage-spec]
@@ -286,7 +287,10 @@
      :whiteboard/pending-tx-data            {}
      :history/page-only-mode?               false
      ;; db tx-id -> editor cursor
-     :history/tx->editor-cursor             {}})))
+     :history/tx->editor-cursor             {}
+
+     ;; new theming
+     :color/accent                           nil})))
 
 ;; Block ast state
 ;; ===============
@@ -2119,3 +2123,25 @@ Similar to re-frame subscriptions"
 (defn clear-user-info!
   []
   (storage/remove :user-groups))
+
+(defn get-color-accent []
+  (get @state :color/accent))
+
+(defn get-color-gradient []
+  (get @state :color/gradient 1))
+
+(defn set-color-accent! [color]
+  (swap! state assoc :color/accent color)
+  (colors/set-radix color (get-color-gradient)))
+
+(defn set-color-gradient! [steps]
+  (swap! state assoc :color/gradient steps)
+  (colors/set-radix (get-color-accent) steps))
+
+(defn unset-color-accent! []
+  (swap! state assoc :color/accent nil)
+  (colors/unset-radix))
+
+(defn unset-color-gradient! []
+  (swap! state assoc :color/gradient nil)
+  (colors/unset-radix))

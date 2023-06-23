@@ -1,6 +1,7 @@
 (ns frontend.components.settings
   (:require [clojure.string :as string]
             [electron.ipc :as ipc]
+            [frontend.colors :as colors]
             [frontend.components.assets :as assets]
             [frontend.components.conversion :as conversion-component]
             [frontend.components.file-sync :as fs]
@@ -104,7 +105,7 @@
 
           "update-available"
           (let [{:keys [name url]} payload]
-            [:p (str "Found new release ")
+            [:p (str (t :settings-page/update-available))
              [:a.link
               {:on-click
                (fn [e]
@@ -113,7 +114,7 @@
               svg/external-link name " 🎉"]])
 
           "error"
-          [:p "⚠️ Oops, Something Went Wrong!" [:br] " Please check out the "
+          [:p (t :settings-page/update-error-1) [:br] (t :settings-page/update-error-2)
            [:a.link
             {:on-click
              (fn [e]
@@ -147,7 +148,7 @@
            :height 500}]]])
 
 (defn row-with-button-action
-  [{:keys [left-label action button-label href on-click desc -for]}]
+  [{:keys [left-label action button-label href on-click desc -for stretch]}]
   [:div.it.sm:grid.sm:grid-cols-3.sm:gap-4.sm:items-start
 
    ;; left column
@@ -158,11 +159,12 @@
    ;; right column
    [:div.mt-1.sm:mt-0.sm:col-span-2
     {:style {:display "flex" :gap "0.5rem" :align-items "center"}}
-    [:div (if action action (ui/button
-                              button-label
-                              :class    "text-sm p-1"
-                              :href     href
-                              :on-click on-click))]
+    [:div {:style (when stretch {:width "100%"})}
+     (if action action (ui/button
+                          button-label
+                          :class    "text-sm p-1"
+                          :href     href
+                          :on-click on-click))]
     (when-not (or (util/mobile?)
                   (mobile-util/native-platform?))
       [:div.text-sm desc])]])
@@ -295,16 +297,78 @@
 
 (defn theme-modes-row [t switch-theme system-theme? dark?]
   (let [pick-theme [:ul.theme-modes-options
-                    [:li {:on-click (partial state/use-theme-mode! "light")
-                          :class    (classnames [{:active (and (not system-theme?) (not dark?))}])} [:i.mode-light] [:strong "light"]]
-                    [:li {:on-click (partial state/use-theme-mode! "dark")
-                          :class    (classnames [{:active (and (not system-theme?) dark?)}])} [:i.mode-dark] [:strong "dark"]]
-                    [:li {:on-click (partial state/use-theme-mode! "system")
-                          :class    (classnames [{:active system-theme?}])} [:i.mode-system] [:strong "system"]]]]
+                    [:li {:on-click (partial state/use-theme-mode! (t :settings-page/theme-light))
+                          :class    (classnames [{:active (and (not system-theme?) (not dark?))}])} [:i.mode-light] [:strong (t :settings-page/theme-light)]]
+                    [:li {:on-click (partial state/use-theme-mode! (t :settings-page/theme-dark))
+                          :class    (classnames [{:active (and (not system-theme?) dark?)}])} [:i.mode-dark] [:strong (t :settings-page/theme-dark)]]
+                    [:li {:on-click (partial state/use-theme-mode! (t :settings-page/theme-system))
+                          :class    (classnames [{:active system-theme?}])} [:i.mode-system] [:strong (t :settings-page/theme-system)]]]]
     (row-with-button-action {:left-label (t :right-side-bar/switch-theme (string/capitalize switch-theme))
                              :-for       "toggle_theme"
-                             :action     pick-theme
+                             :action     pick-theme-mode
                              :desc       (ui/render-keyboard-shortcut (shortcut-helper/gen-shortcut-seq :ui/toggle-theme))})))
+
+(defn theme-row [t dark?]
+  (let [color-accent (state/sub :color/accent)
+        pick-theme [:div.grid {:style {:grid-template-columns "repeat(17, 1fr)"
+                                       :gap "0.75rem"
+                                       :overflow-x :scroll
+                                       :width "100%"
+                                       :padding-left "0.25rem"}}
+                    [:div.theme-row--color {:on-click #(state/unset-color-accent!)
+                                            :class (when (nil? color-accent) "selected")}
+                     [:div.theme-row--color-swatch {:style {;; "--background"        "#0F2A35"
+                                                            ;; "--background-hover"  "#163542"
+                                                            ;; "--background-active" "#274E5E"
+                                                            "--background"            "#0369a1"
+                                                            "--background-hover"      "#38bdf8" ;; TODO what is the hover color?
+                                                            "--background-active"      "#0ea5e9"} ;; TODO what is the hover color?
+                                                           :border-right "1px solid rgba(255,255,255,0.4)"}]
+                     [:div.text-xs {:style {:margin "0 -0.5rem"
+                                            :opacity 0.5
+                                            :height "1rem"
+                                            :padding "0 0.5rem"}}]]
+                    [:div.theme-row--color-separator]
+                    (for [color colors/color-list
+                          :let [gray (get colors/gray-pairing-map color)]]
+                      [:div.theme-row--color {:on-click #(state/set-color-accent! color)
+                                              :class (when (= color-accent color) "selected")}
+                       [:div.theme-row--color-swatch {:style {"--background"            (str "var(--rx-" (name color) "-07)")
+                                                              "--background-hover"      (str "var(--rx-" (name color) "-10)")
+                                                              "--background-active"     (str "var(--rx-" (name color) "-09) ")}}]])]
+                                                              ; "--border-hover"     (str "var(--rx-" (name color) "-08)")}}]
+        display-theme [:button {:style {:background "var(--lx-accent-03)"
+                                        :border "1px solid var(--lx-accent-07)"
+                                        :color "var(--lx-accent-11)"}}
+                        (if color-accent (name color-accent) "default")]]
+    [:<>
+     (row-with-button-action {:left-label "Theme color"
+                              :-for       "toggle_radix_theme"
+                              :stretch    true
+                              :action     pick-theme})]))
+
+(defn theme-gradient-row [t dark? color-accent]
+  (let [color-gradient (state/sub :color/gradient)
+        pick-gradient [:div {:class "grid grid-cols-7 gap-2 overflow-x-auto"}
+                       [:div {:class (cond-> "theme-gradient-row--gradient-swatch"
+                                       (= 1 color-gradient) (str " selected"))
+                              :style {"--background" (str "var(--rx-" (name color-accent) "-07)")
+                                      "--background-hover" (str "var(--rx-" (name color-accent) "-08)")
+                                      "--background-active" (str "var(--rx-" (name color-accent) "-09)")}
+                              :on-click #(state/unset-color-gradient!)}]
+                       (for [n (range 2 8)
+                             :let [active? (= n color-gradient)]]
+                        [:div {:class (cond-> "bg-white theme-gradient-row--gradient-swatch"
+                                        active? (str " selected"))
+                               :key n
+                               :style {"--background" (colors/linear-gradient color-accent :07 n)
+                                       "--background-hover" (colors/linear-gradient color-accent :08 n)
+                                       "--background-active" (colors/linear-gradient color-accent :09 n)}
+                               :on-click #(state/set-color-gradient! n)}])]]
+   (row-with-button-action {:left-label "Theme gradient"
+                            :stretch true
+                            :action pick-gradient})))
+
 
 (defn file-format-row [t preferred-format]
   [:div.it.sm:grid.sm:grid-cols-3.sm:gap-4.sm:items-start
@@ -342,7 +406,7 @@
                       (when-not (string/blank? format)
                         (config-handler/set-config! :journal/page-title-format format)
                         (notification/show!
-                          [:div "You must re-index your graph for this change to take effect"]
+                          [:div (t :settings-page/custom-date-format-notification)]
                           :warning false)
                         (state/close-modal!)
                         (route-handler/redirect! {:to :repos}))))}
@@ -393,7 +457,7 @@
                       :interactive true
                       :disabled    false}
                      (svg/info))]
-          preferred-pasting-file? 
+          preferred-pasting-file?
           config-handler/toggle-preferred-pasting-file!))
 
 (defn auto-expand-row [t auto-expand-block-refs?]
@@ -636,12 +700,15 @@
         theme (state/sub :ui/theme)
         dark? (= "dark" theme)
         system-theme? (state/sub :ui/system-theme?)
-        switch-theme (if dark? "light" "dark")]
+        switch-theme (if dark? "light" "dark")
+        color-accent (state/sub :color/accent)]
     [:div.panel-wrap.is-general
      (version-row t version)
      (language-row t preferred-language)
      (theme-modes-row t switch-theme system-theme? dark?)
      (when (and (util/electron?) (not util/mac?)) (native-titlebar-row t))
+     ; (theme-row t dark?)
+     ; (when color-accent (theme-gradient-row t dark? color-accent))
      (when (config/global-config-enabled?) (edit-global-config-edn))
      (when current-repo (edit-config-edn))
      (when current-repo (edit-custom-css))
@@ -691,7 +758,7 @@
     (ui/admonition
      :tip
      [:p "If you have Logseq Sync enabled, you can view a page's edit history directly. This section is for tech-savvy only."])
-    [:span.text-sm.opacity-50.my-4 
+    [:span.text-sm.opacity-50.my-4
      "To view page's edit history, click the three horizontal dots in the top-right corner and select \"View page history\"."]
     [:br][:br]
     [:span.text-sm.opacity-50.my-4
@@ -699,9 +766,7 @@
     [:a {:href "https://git-scm.com/" :target "_blank"}
      "Git"]
     [:span.text-sm.opacity-50.my-4
-     " for version control."]
-    [:span.text-sm.opacity-50.my-4
-     "Use Git at your own risk as general Git issues are not supported by the Logseq team"]]
+     (t :settings-page/git-desc-3)]]
    [:br]
    (switch-git-auto-commit-row t)
    (git-auto-commit-seconds t)
@@ -757,12 +822,12 @@
         count-limit (if pro-account? 10 1)
         count-percent (js/Math.round (/ count-usage count-limit 0.01))
         storage-usage (->> (map :used-gbs graph-usage)
-                           (reduce + 0)) 
-        storage-usage-formatted (cond 
+                           (reduce + 0))
+        storage-usage-formatted (cond
                                   (zero? storage-usage) "0.0"
                                   (< storage-usage 0.01) "Less than 0.01"
                                   :else (gstring/format "%.2f" storage-usage))
-        ;; TODO: check logic on this. What are the rules around storage limits?  
+        ;; TODO: check logic on this. What are the rules around storage limits?
         ;; do we, and should we be able to, give individual users more storage?
         ;; should that be on a per graph or per user basis?
         default-storage-limit (if pro-account? 10 0.05)
@@ -776,7 +841,7 @@
        [:<>
         (gstring/format "%s of %s synced graphs " count-usage count-limit)
         [:strong.text-white (gstring/format "(%s%%)" count-percent)]
-        ", "]) 
+        ", "])
      (gstring/format "%sGB of %sGB total storage " storage-usage-formatted storage-limit)
      [:strong.text-white (gstring/format "(%s%%)" storage-percent-formatted)]]))
      ; storage-usage-formatted "GB of " storage-limit "GB total storage"
@@ -788,14 +853,14 @@
    [:div.grid.gap-3 {:style {:grid-template-columns (str "repeat(" (count graph-usage) ", 1fr)")}}
     (for [{:keys [name used-percent]} graph-usage
           :let [color (if (<= 100 used-percent) "bg-red-500" "bg-blue-500")]]
-     [:div.rounded-full.w-full.h-2 {:class "bg-black/50" 
+     [:div.rounded-full.w-full.h-2 {:class "bg-black/50"
                                     :tooltip name}
       [:div.rounded-full.h-2 {:class color
-                              :style {:width (str used-percent "%") 
-                                      :min-width "0.5rem" 
+                              :style {:width (str used-percent "%")
+                                      :min-width "0.5rem"
                                       :max-width "100%"}}]])]))
-  
-(rum/defc ^:large-vars/cleanup-todo settings-account < rum/reactive
+
+(rum/defc settings-account < rum/reactive
   []
   (let [current-graph-uuid (state/sub-current-file-sync-graph-uuid)
         graph-usage (state/get-remote-graph-usage)
@@ -814,13 +879,13 @@
         logged-in?
         [:div.grid.grid-cols-3.gap-8.pt-2
          [:div "Current plan"]
-         [:div.col-span-2 
+         [:div.col-span-2
           [:div {:class "w-full bg-gray-500/10 rounded-lg p-4 flex flex-col gap-4"}
            [:div.flex.gap-4.items-center
             (if pro-account?
               [:div.flex-1 "Pro"]
               [:div.flex-1 "Free"])
-            (cond 
+            (cond
               has-subscribed?
               (ui/button "Manage plan" {:class "p-1 h-8 justify-center"
                                         :disabled true
@@ -846,26 +911,26 @@
           [:<>
            [:div "Billing"]
            [:div.col-span-2.flex.flex-col.gap-4
-            (cond 
+            (cond
               ;; If there is no expiration date, print the renewal date
-              (and renewal-date (nil? expiration-date)) 
-              [:div 
-               [:strong.font-semibold "Next billing date: " 
+              (and renewal-date (nil? expiration-date))
+              [:div
+               [:strong.font-semibold "Next billing date: "
                 (date/get-locale-string renewal-date)]]
               ;; If the expiration date is in the future, word it as such
-              (< (js/Date.) expiration-date) 
+              (< (js/Date.) expiration-date)
               [:div
-               [:strong.font-semibold "Pro plan expires on: " 
+               [:strong.font-semibold "Pro plan expires on: "
                 (date/get-locale-string expiration-date)]]
               ;; Otherwise, ind
-              :else 
-              [:div 
-               [:strong.font-semibold "Pro plan expired on: " 
+              :else
+              [:div
+               [:strong.font-semibold "Pro plan expired on: "
                 (date/get-locale-string expiration-date)]])
-                               
-            [:div (ui/button "Open invoices" {:class "w-full h-8 p-1 justify-center" 
-                                              :disabled true 
-                                              :background "gray" 
+
+            [:div (ui/button "Open invoices" {:class "w-full h-8 p-1 justify-center"
+                                              :disabled true
+                                              :background "gray"
                                               :icon "receipt"})]]])
          [:div "Profile"]
          [:div.col-span-2.grid.grid-cols-2.gap-4
@@ -877,7 +942,7 @@
            [:input.rounded.border.px-2.py-1.box-border {:class "border-blue-500 bg-black/25 w-full"}]]
           [:div.flex-1.flex.flex-col.gap-2.col-span-2
            [:label.text-sm.font-semibold "Username"]
-           [:input.rounded.border.px-2.py-1.box-border {:class "border-blue-500 bg-black/25" 
+           [:input.rounded.border.px-2.py-1.box-border {:class "border-blue-500 bg-black/25"
                                                         :value (user-handler/email)}]]]
          [:div "Authentication"]
          [:div.col-span-2
@@ -891,10 +956,10 @@
                                               :background "gray"
                                               :icon "key"
                                               :on-click user-handler/logout})]
-           [:div.col-span-2 (ui/button "Delete Account" {:class "p-1 h-8 justify-center w-full" 
+           [:div.col-span-2 (ui/button "Delete Account" {:class "p-1 h-8 justify-center w-full"
                                                          :disabled true
-                                                         :background "red"})]]]] 
-                                            
+                                                         :background "red"})]]]]
+
         (not logged-in?)
         [:div.grid.grid-cols-3.gap-8.pt-2
          [:div "Authentication"]
@@ -904,25 +969,25 @@
                                              :on-click (fn []
                                                          (state/close-settings!)
                                                          (state/pub-event! [:user/login]))})]
-          [:div.flex-1 (ui/button (t :login) {:icon "login" 
-                                              :class "h-8 w-full text-center justify-center" 
+          [:div.flex-1 (ui/button (t :login) {:icon "login"
+                                              :class "h-8 w-full text-center justify-center"
                                               :background "gray"
                                               :on-click (fn []
                                                           (state/close-settings!)
                                                           (state/pub-event! [:user/login]))})]]
          [:div.col-span-3.flex.flex-col.gap-4 {:class "bg-black/20 p-4 rounded-lg"}
           [:div.flex.w-full.items-center
-           [:div {:class "w-1/2 text-lg"} 
-            "Discover the power of " 
+           [:div {:class "w-1/2 text-lg"}
+            "Discover the power of "
             [:strong {:class "text-white/80"} "Logseq Sync"]]
-           [:div {:class "w-1/2 bg-gradient-to-r from-white/10 to-transparent p-3 rounded-lg flex items-center gap-2 px-5 ml-5"} 
+           [:div {:class "w-1/2 bg-gradient-to-r from-white/10 to-transparent p-3 rounded-lg flex items-center gap-2 px-5 ml-5"}
             [:div.w-3.h-3.rounded-full.bg-green-500]
             "Synced"]]
           [:div.flex.w-full.gap-4
            [:div {:class "w-1/2 bg-black/50 rounded-lg p-4 pt-10 relative flex flex-col gap-4"}
             [:div.absolute.top-0.left-4.bg-gray-700.uppercase.px-2.py-1.rounded-b-lg.font-bold.text-xs "Free"]
             [:div
-             [:strong.text-white.text-xl.font-normal "$0"]] 
+             [:strong.text-white.text-xl.font-normal "$0"]]
             [:div.text-white.font-bold {:class "h-[2.5rem] "} "Get started with basic syncing"]
             [:ul.text-xs.list-none.m-0.flex.flex-col.gap-0.5
              [:li "Unlimited unsynced graphs"]
@@ -932,7 +997,7 @@
            [:div {:class "w-1/2 bg-black/50 rounded-lg p-4 pt-10 relative flex flex-col gap-4"}
             [:div.absolute.top-0.left-4.bg-blue-700.uppercase.px-2.py-1.rounded-b-lg.font-bold.text-xs "Pro"]
             [:div
-             [:strong.text-white.text-xl.font-normal "$10"] 
+             [:strong.text-white.text-xl.font-normal "$10"]
              [:span.text-xs.font-base {:class "ml-0.5"} "/ month"]]
             [:div.text-white.font-bold {:class "h-[2.5rem]"} "Unlock advanced syncing and more"]
             [:ul.text-xs.list-none.m-0.flex.flex-col.gap-0.5
@@ -997,11 +1062,11 @@
          {:class (when-not user-handler/alpha-or-beta-user? "opacity-50 pointer-events-none cursor-not-allowed")}
          (sync-switcher-row enable-sync?)
          [:div.text-sm
-          "Click"
+          (t :settings-page/sync-desc-1)
           [:a.mx-1 {:href "https://blog.logseq.com/how-to-setup-and-use-logseq-sync/"
                     :target "_blank"}
-           "here"]
-          "for instructions on how to set up and use Sync."]]])]))
+           (t :settings-page/sync-desc-2)]
+          (t :settings-page/sync-desc-3)]]])]))
 
      ;; (when-not web-platform?
      ;;   [:<>
@@ -1012,7 +1077,7 @@
      ;;     {:class (when-not user-handler/alpha-user? "opacity-50 pointer-events-none cursor-not-allowed")}
      ;;     ;; features
      ;;     ]])
-     
+
 
 (def DEFAULT-ACTIVE-TAB-STATE (if config/ENABLE-SETTINGS-ACCOUNT-TAB [:account :account] [:general :general]))
 
@@ -1050,13 +1115,13 @@
                [:editor "editor" (t :settings-page/tab-editor) (ui/icon "writing")]
 
                (when (util/electron?)
-                 [:git "git" (t :settings-page/tab-version-control) (ui/icon "history")])
+                 [:version-control "git" (t :settings-page/tab-version-control) (ui/icon "history")])
 
                ;; (when (util/electron?)
                ;;   [:assets "assets" (t :settings-page/tab-assets) (ui/icon "box")])
 
                [:advanced "advanced" (t :settings-page/tab-advanced) (ui/icon "bulb")]
-               [:features "features" (t :settings-page/tab-features) (ui/icon "app-feature")]
+               [:features "features" (t :settings-page/tab-features) (ui/icon "square-asterisk")]
 
                (when plugins-of-settings
                  [:plugins-setting "plugins" (t :settings-of-plugins) (ui/icon "puzzle")])]]
@@ -1074,7 +1139,7 @@
 
       [:article
        [:header.cp__settings-header
-        [:h1.cp__settings-category-title (name (first @*active))]]
+        [:h1.cp__settings-category-title (t (keyword (str "settings-page/tab-" (name (first @*active)))))]]
 
        (case (first @*active)
 
@@ -1084,7 +1149,7 @@
            (reset! *active [label label])
            nil)
 
-         :account 
+         :account
          (settings-account)
 
          :general
@@ -1093,7 +1158,7 @@
          :editor
          (settings-editor current-repo)
 
-         :git
+         :version-control
          (settings-git)
 
          :assets
