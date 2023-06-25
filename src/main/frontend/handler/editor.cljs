@@ -154,13 +154,13 @@
 (defn italics-format! []
   (format-text! config/get-italic))
 
+(defn strikethrough-format! []
+  (format-text! config/get-strikethrough))
+
 (defn highlight-format! []
   (when-let [block (state/get-edit-block)]
     (let [format (:block/format block)]
       (format-text! #(config/get-highlight format)))))
-
-(defn strike-through-format! []
-  (format-text! config/get-strike-through))
 
 (defn html-link-format!
   ([]
@@ -1552,14 +1552,17 @@
   {"[" "]"
    "{" "}"
    "(" ")"
+   "<" ">"
    "`" "`"
-   "~" "~"
+   "'" "'"
+   "\"" "\"" ; double quote
    "*" "*"
    "_" "_"
    "^" "^"
    "=" "="
-   "/" "/"
-   "+" "+"})
+   "/" "/" 
+   "+" "+"
+   "~" "~"})
 ;; ":" ":"                              ; TODO: only properties editing and org mode tag
 
 (def reversed-autopair-map
@@ -1567,7 +1570,13 @@
           (keys autopair-map)))
 
 (def autopair-when-selected
-  #{"*" "^" "_" "=" "+" "/"})
+  #{"*"
+    "_"
+    "^"
+    "="
+    "/"
+    "+"
+    "~"})
 
 (def delete-map
   (assoc autopair-map
@@ -1615,7 +1624,9 @@
            (surround-by? input "\n" "")
            (surround-by? input " " "")
            (surround-by? input "]" "")
-           (surround-by? input "(" ""))))
+           (surround-by? input "(" "")
+           (surround-by? input "{" "")
+           (surround-by? input "<" ""))))
 
 (defn wrapped-by?
   [input before end]
@@ -2872,6 +2883,7 @@
 
         ;; If you type `xyz`, the last backtick should close the first and not add another autopair
         ;; If you type several backticks in a row, each one should autopair to accommodate multiline code (```)
+        ;; the same applies to single and double quotes
         (-> (keys autopair-map)
             set
             (disj "(")
