@@ -159,37 +159,37 @@
    [:div.mt-1.sm:mt-0.sm:col-span-2
     {:style {:display "flex" :gap "0.5rem" :align-items "center"}}
     [:div (if action action (ui/button
-                              button-label
-                              :class    "text-sm p-1"
-                              :href     href
-                              :on-click on-click))]
+                             button-label
+                             :class    "text-sm p-1"
+                             :href     href
+                             :on-click on-click))]
     (when-not (or (util/mobile?)
                   (mobile-util/native-platform?))
       [:div.text-sm desc])]])
 
 (defn edit-config-edn []
   (row-with-button-action
-    {:left-label   (t :settings-page/custom-configuration)
-     :button-label (t :settings-page/edit-config-edn)
-     :href         (rfe/href :file {:path (config/get-repo-config-path)})
-     :on-click     #(js/setTimeout (fn [] (ui-handler/toggle-settings-modal!)))
-     :-for         "config_edn"}))
+   {:left-label   (t :settings-page/custom-configuration)
+    :button-label (t :settings-page/edit-config-edn)
+    :href         (rfe/href :file {:path (config/get-repo-config-path)})
+    :on-click     #(js/setTimeout (fn [] (ui-handler/toggle-settings-modal!)))
+    :-for         "config_edn"}))
 
 (defn edit-global-config-edn []
   (row-with-button-action
-    {:left-label   (t :settings-page/custom-global-configuration)
-     :button-label (t :settings-page/edit-global-config-edn)
-     :href         (rfe/href :file {:path (global-config-handler/global-config-path)})
-     :on-click     #(js/setTimeout (fn [] (ui-handler/toggle-settings-modal!)))
-     :-for         "global_config_edn"}))
+   {:left-label   (t :settings-page/custom-global-configuration)
+    :button-label (t :settings-page/edit-global-config-edn)
+    :href         (rfe/href :file {:path (global-config-handler/global-config-path)})
+    :on-click     #(js/setTimeout (fn [] (ui-handler/toggle-settings-modal!)))
+    :-for         "global_config_edn"}))
 
 (defn edit-custom-css []
   (row-with-button-action
-    {:left-label   (t :settings-page/custom-theme)
-     :button-label (t :settings-page/edit-custom-css)
-     :href         (rfe/href :file {:path (config/get-custom-css-path)})
-     :on-click     #(js/setTimeout (fn [] (ui-handler/toggle-settings-modal!)))
-     :-for         "customize_css"}))
+   {:left-label   (t :settings-page/custom-theme)
+    :button-label (t :settings-page/edit-custom-css)
+    :href         (rfe/href :file {:path (config/get-custom-css-path)})
+    :on-click     #(js/setTimeout (fn [] (ui-handler/toggle-settings-modal!)))
+    :-for         "customize_css"}))
 
 (defn edit-export-css []
   (row-with-button-action
@@ -222,13 +222,13 @@
      [:div
       [:div.rounded-md.sm:max-w-xs
        (ui/toggle
-         enabled?
-         (fn []
-           (state/set-state! [:electron/user-cfgs :spell-check] (not enabled?))
-           (p/then (ipc/ipc :userAppCfgs :spell-check (not enabled?))
-                   #(when (js/confirm (t :relaunch-confirm-to-work))
-                      (js/logseq.api.relaunch))))
-         true)]]]))
+        enabled?
+        (fn []
+          (state/set-state! [:electron/user-cfgs :spell-check] (not enabled?))
+          (p/then (ipc/ipc :userAppCfgs :spell-check (not enabled?))
+                  #(when (js/confirm (t :relaunch-confirm-to-work))
+                     (js/logseq.api.relaunch))))
+        true)]]]))
 
 (rum/defcs switch-git-auto-commit-row < rum/reactive
   [state t]
@@ -239,11 +239,11 @@
      [:div
       [:div.rounded-md.sm:max-w-xs
        (ui/toggle
-         enabled?
-         (fn []
-           (state/set-state! [:electron/user-cfgs :git/disable-auto-commit?] enabled?)
-           (ipc/ipc :userAppCfgs :git/disable-auto-commit? enabled?))
-         true)]]]))
+        enabled?
+        (fn []
+          (state/set-state! [:electron/user-cfgs :git/disable-auto-commit?] enabled?)
+          (ipc/ipc :userAppCfgs :git/disable-auto-commit? enabled?))
+        true)]]]))
 
 (rum/defcs git-auto-commit-seconds < rum/reactive
   [state t]
@@ -342,8 +342,8 @@
                       (when-not (string/blank? format)
                         (config-handler/set-config! :journal/page-title-format format)
                         (notification/show!
-                          [:div (t :settings-page/custom-date-format-notification)]
-                          :warning false)
+                         [:div (t :settings-page/custom-date-format-notification)]
+                         :warning false)
                         (state/close-modal!)
                         (route-handler/redirect! {:to :repos}))))}
       (for [format (sort (date/journal-title-formatters))]
@@ -473,12 +473,12 @@
 
 (rum/defc keyboard-shortcuts-row [t]
   (row-with-button-action
-    {:left-label   (t :settings-page/customize-shortcuts)
-     :button-label (t :settings-page/shortcut-settings)
-     :on-click      (fn []
-                      (state/close-settings!)
-                      (route-handler/redirect! {:to :shortcut-setting}))
-     :-for         "customize_shortcuts"}))
+   {:left-label   (t :settings-page/customize-shortcuts)
+    :button-label (t :settings-page/shortcut-settings)
+    :on-click      (fn []
+                     (state/close-settings!)
+                     (route-handler/redirect! {:to :shortcut-setting}))
+    :-for         "customize_shortcuts"}))
 
 (defn zotero-settings-row []
   [:div.it.sm:grid.sm:grid-cols-3.sm:gap-4.sm:items-start
@@ -488,13 +488,13 @@
    [:div.mt-1.sm:mt-0.sm:col-span-2
     [:div
      (ui/button
-       (t :settings)
-       :class "text-sm p-1"
-       :style {:margin-top "0px"}
-       :on-click
-       (fn []
-         (state/close-settings!)
-         (route-handler/redirect! {:to :zotero-setting})))]]])
+      (t :settings)
+      :class "text-sm p-1"
+      :style {:margin-top "0px"}
+      :on-click
+      (fn []
+        (state/close-settings!)
+        (route-handler/redirect! {:to :zotero-setting})))]]])
 
 (defn auto-push-row [_t current-repo enable-git-auto-push?]
   (when (and current-repo (string/starts-with? current-repo "https://"))
@@ -510,7 +510,7 @@
           (t :settings-page/disable-sentry)
           (not instrument-disabled?)
           (fn [] (instrument/disable-instrument
-                   (not instrument-disabled?)))
+                  (not instrument-disabled?)))
           [:span.text-sm.opacity-50 (t :settings-page/disable-sentry-desc)]))
 
 (defn clear-cache-row [t]
@@ -548,7 +548,7 @@
          {:style {:top -18 :left 10}}
          (ui/button (t :plugin/restart)
                     :on-click #(js/logseq.api.relaunch)
-           :small? true :intent "logseq")]])]))
+                    :small? true :intent "logseq")]])]))
 
 (rum/defc http-server-enabled-switcher
   [t]
@@ -693,7 +693,7 @@
      [:p (t :settings-page/git-tip)])
     [:span.text-sm.opacity-50.my-4
      (t :settings-page/git-desc-1)]
-    [:br][:br]
+    [:br] [:br]
     [:span.text-sm.opacity-50.my-4
      (t :settings-page/git-desc-2)]
     [:a {:href "https://git-scm.com/" :target "_blank"}
@@ -705,8 +705,8 @@
    (git-auto-commit-seconds t)
 
    (ui/admonition
-     :warning
-     [:p (t :settings-page/git-confirm)])])
+    :warning
+    [:p (t :settings-page/git-confirm)])])
 
 (rum/defc settings-advanced < rum/reactive
   [current-repo]
@@ -722,8 +722,8 @@
      (clear-cache-row t)
 
      (ui/admonition
-       :warning
-       [:p (t :settings-page/clear-cache-warning)])]))
+      :warning
+      [:p (t :settings-page/clear-cache-warning)])]))
 
 (rum/defc sync-enabled-switcher
   [enabled?]
@@ -785,18 +785,17 @@
      ; storage-usage-formatted "GB of " storage-limit "GB total storage"
      ; [:strong.text-white " (" storage-percent-formatted "%)"]]))
 
-
 (rum/defc settings-account-usage-graphs [_pro-account? graph-usage]
   (when (< 0 (count graph-usage))
-   [:div.grid.gap-3 {:style {:grid-template-columns (str "repeat(" (count graph-usage) ", 1fr)")}}
-    (for [{:keys [name used-percent]} graph-usage
-          :let [color (if (<= 100 used-percent) "bg-red-500" "bg-blue-500")]]
-     [:div.rounded-full.w-full.h-2 {:class "bg-black/50"
-                                    :tooltip name}
-      [:div.rounded-full.h-2 {:class color
-                              :style {:width (str used-percent "%")
-                                      :min-width "0.5rem"
-                                      :max-width "100%"}}]])]))
+    [:div.grid.gap-3 {:style {:grid-template-columns (str "repeat(" (count graph-usage) ", 1fr)")}}
+     (for [{:keys [name used-percent]} graph-usage
+           :let [color (if (<= 100 used-percent) "bg-red-500" "bg-blue-500")]]
+       [:div.rounded-full.w-full.h-2 {:class "bg-black/50"
+                                      :tooltip name}
+        [:div.rounded-full.h-2 {:class color
+                                :style {:width (str used-percent "%")
+                                        :min-width "0.5rem"
+                                        :max-width "100%"}}]])]))
 
 (rum/defc ^:large-vars/cleanup-todo settings-account < rum/reactive
   []
@@ -846,30 +845,30 @@
                                             :icon "cloud"
                                             :on-click #(fs/maybe-onboarding-show :sync-initiate)}))]]
          (when has-subscribed?
-          [:<>
-           [:div "Billing"]
-           [:div.col-span-2.flex.flex-col.gap-4
-            (cond
+           [:<>
+            [:div "Billing"]
+            [:div.col-span-2.flex.flex-col.gap-4
+             (cond
               ;; If there is no expiration date, print the renewal date
-              (and renewal-date (nil? expiration-date))
-              [:div
-               [:strong.font-semibold "Next billing date: "
-                (date/get-locale-string renewal-date)]]
+               (and renewal-date (nil? expiration-date))
+               [:div
+                [:strong.font-semibold "Next billing date: "
+                 (date/get-locale-string renewal-date)]]
               ;; If the expiration date is in the future, word it as such
-              (< (js/Date.) expiration-date)
-              [:div
-               [:strong.font-semibold "Pro plan expires on: "
-                (date/get-locale-string expiration-date)]]
+               (< (js/Date.) expiration-date)
+               [:div
+                [:strong.font-semibold "Pro plan expires on: "
+                 (date/get-locale-string expiration-date)]]
               ;; Otherwise, ind
-              :else
-              [:div
-               [:strong.font-semibold "Pro plan expired on: "
-                (date/get-locale-string expiration-date)]])
+               :else
+               [:div
+                [:strong.font-semibold "Pro plan expired on: "
+                 (date/get-locale-string expiration-date)]])
 
-            [:div (ui/button "Open invoices" {:class "w-full h-8 p-1 justify-center"
-                                              :disabled true
-                                              :background "gray"
-                                              :icon "receipt"})]]])
+             [:div (ui/button "Open invoices" {:class "w-full h-8 p-1 justify-center"
+                                               :disabled true
+                                               :background "gray"
+                                               :icon "receipt"})]]])
          [:div "Profile"]
          [:div.col-span-2.grid.grid-cols-2.gap-4
           [:div.flex.flex-col.gap-2.box-border {:class "basis-1/2"}
@@ -1020,20 +1019,19 @@
      ;;     ;; features
      ;;     ]])
 
-
 (def DEFAULT-ACTIVE-TAB-STATE (if config/ENABLE-SETTINGS-ACCOUNT-TAB [:account :account] [:general :general]))
 
 (rum/defcs settings
   < (rum/local DEFAULT-ACTIVE-TAB-STATE ::active)
-    {:will-mount
-     (fn [state]
-       (state/load-app-user-cfgs)
-       state)
-     :will-unmount
-     (fn [state]
-       (state/close-settings!)
-       state)}
-    rum/reactive
+  {:will-mount
+   (fn [state]
+     (state/load-app-user-cfgs)
+     state)
+   :will-unmount
+   (fn [state]
+     (state/close-settings!)
+     state)}
+  rum/reactive
   [state]
   (let [current-repo (state/sub :git/current-repo)
         ;; enable-block-timestamps? (state/enable-block-timestamps?)
@@ -1052,7 +1050,7 @@
        [:ul.settings-menu
         (for [[label id text icon]
               [(when config/ENABLE-SETTINGS-ACCOUNT-TAB
-                [:account "account" (t :settings-page/tab-account) (ui/icon "user-circle")])
+                 [:account "account" (t :settings-page/tab-account) (ui/icon "user-circle")])
                [:general "general" (t :settings-page/tab-general) (ui/icon "adjustments")]
                [:editor "editor" (t :settings-page/tab-editor) (ui/icon "writing")]
 
