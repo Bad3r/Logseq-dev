@@ -27,7 +27,7 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | \
 WORKDIR /data
 
 # build Logseq static resources
-RUN git clone -b master https://github.com/logseq/logseq.git .
+RUN git clone -b test-fs-wrt-time https://github.com/bad3r/logseq-dev.git .
 
 RUN yarn config set network-timeout 240000 -g && yarn install
 
