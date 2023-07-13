@@ -161,10 +161,10 @@ mimic-fn@^2.0.0:
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-2.1.0.tgz#7ed2c2ccccaf84d3ffcb7a69b57711fc2083401b"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
 
-mldoc@^1.5.1:
-  version "1.5.3"
-  resolved "https://registry.yarnpkg.com/mldoc/-/mldoc-1.5.3.tgz#98d5bb276ac6908d72e1c58c27916e488ef9d395"
-  integrity sha512-hkI3PtjBHhbZqTr1U5/A8TIrIzg9DGZzCMLrfzePAdM+97GNeZijmPqUQXWEAyEQsDPnkipMoQZsBXxhnwzfJA==
+mldoc@^1.5.7:
+  version "1.5.7"
+  resolved "https://registry.yarnpkg.com/mldoc/-/mldoc-1.5.7.tgz#9b316f633a3032ce217a339621b98e70bb229235"
+  integrity sha512-Ph9y8t195UWtkn0hK/VVNvi/wjZUJCLXAaUGVE80KmaE9Rwp9wWBMSEg4wPgjCac3edMjaONucD52fHOFTU9UA==
   dependencies:
     yargs "^12.0.2"
 
