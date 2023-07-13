@@ -58,8 +58,7 @@
       (let [sorted-missing (->> all-missing
                                 (map (fn [[k v]]
                                        {:translation-key k
-                                                  ;; Shorten values
-                                        :string-to-translate (shorten v 50)
+                                        :string-to-translate v
                                         :file (if (= "tutorial" (namespace k))
                                                 (str "Under tutorials/")
                                                 (str "dicts/" (-> lang name string/lower-case) ".edn"))}))
@@ -69,7 +68,9 @@
             (println "\n;; For" file)
             (doseq [{:keys [translation-key string-to-translate]} missing-for-file]
               (println translation-key (pr-str string-to-translate))))
-          (task-util/print-table sorted-missing))))))
+          (task-util/print-table
+           ;; Shorten values
+           (map #(update % :string-to-translate shorten 50) sorted-missing)))))))
 
 (defn- validate-non-default-languages
   "This validation finds any translation keys that don't exist in the default
@@ -162,17 +163,19 @@
    :de #{:graph :host :plugins :port :right-side-bar/whiteboards :search-item/block
          :settings-of-plugins :search-item/whiteboard :shortcut.category/navigating
          :settings-page/enable-tooltip :settings-page/enable-whiteboards :settings-page/plugin-system}
-   :es #{:settings-page/tab-general :settings-page/tab-editor}
+   :es #{:settings-page/tab-general :settings-page/tab-editor :whiteboard/color}
    :it #{:plugins}
    :nl #{:plugins :type :left-side-bar/nav-recent-pages :plugin/update}
    :pl #{:port}
-   :pt-BR #{:plugins :right-side-bar/flashcards :settings-page/enable-flashcards}
+   :pt-BR #{:plugins :right-side-bar/flashcards :settings-page/enable-flashcards :page/backlinks
+            :host :settings-page/tab-editor :shortcut.category/plugins :whiteboard/link}
    :pt-PT #{:plugins :settings-of-plugins :plugin/downloads :right-side-bar/flashcards
             :settings-page/enable-flashcards :settings-page/plugin-system}
    :nb-NO #{:port :type :whiteboard :right-side-bar/flashcards :right-side-bar/whiteboards 
             :search-item/whiteboard :settings-page/enable-flashcards :settings-page/enable-whiteboards 
             :settings-page/tab-editor :shortcut.category/whiteboard :whiteboard/medium 
             :whiteboard/twitter-url :whiteboard/youtube-url}
+   :tr #{:help/awesome-logseq}
    })
 
 (defn- validate-languages-dont-have-duplicates

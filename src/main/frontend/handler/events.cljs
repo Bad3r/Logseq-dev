@@ -166,12 +166,8 @@
 
 ;; Parameters for the `persist-db` function, to show the notification messages
 (def persist-db-noti-m
-  {:before     #(notification/show!
-                 (ui/loading (t :graph/persist))
-                 :warning)
-   :on-error   #(notification/show!
-                 (t :graph/persist-error)
-                 :error)})
+  {:before     #(ui/notify-graph-persist!)
+   :on-error   #(ui/notify-graph-persist-error!)})
 
 (defn- graph-switch-on-persisted
   "Logic for keeping db sync when switching graphs
@@ -275,11 +271,12 @@
         (not (mobile-util/native-platform?)))
     (fn [close-fn]
       [:div
+       ;; TODO: fn translation with args
        [:p
         "Grant native filesystem permission for directory: "
         [:b (config/get-local-dir repo)]]
        (ui/button
-        "Grant"
+        (t :settings-permission/start-granting)
         :class "ui__modal-enter"
         :on-click (fn []
                     (nfs/check-directory-permission! repo)
@@ -297,7 +294,7 @@
   [block shown-properties all-properties _close-fn]
   (let [query-properties (rum/react *query-properties)]
     [:div.p-4
-     [:div.font-bold "Properties settings for this query:"]
+     [:div.font-bold (t :query/config-property-settings)]
      (for [property all-properties]
        (let [property-value (get query-properties property)
              shown? (if (nil? property-value)
@@ -972,15 +969,20 @@
   []
   (let [chan (state/get-events-chan)]
     (async/go-loop []
-      (let [payload (async/<! chan)]
-        (try
-          (handle payload)
-          (catch :default error
-            (let [type :handle-system-events/failed]
-              (js/console.error (str type) (clj->js payload) "\n" error)
-              (state/pub-event! [:capture-error {:error error
-                                                 :payload {:type type
-                                                           :payload payload}}])))))
+      (let [[payload d] (async/<! chan)]
+        (->
+         (try
+           (p/resolved (handle payload))
+           (catch :default error
+             (p/rejected error)))
+         (p/then (fn [result]
+                   (p/resolve! d result)))
+         (p/catch (fn [error]
+                    (let [type :handle-system-events/failed]
+                      (state/pub-event! [:capture-error {:error error
+                                                         :payload {:type type
+                                                                   :payload payload}}])
+                      (p/reject! d error))))))
       (recur))
     chan))
 

@@ -7,6 +7,7 @@
             [logseq.graph-parser.mldoc :as gp-mldoc]
             [frontend.handler.notification :as notification]
             [frontend.handler.common.plugin :as plugin-common-handler]
+            [frontend.storage :as storage]
             [camel-snake-kebab.core :as csk]
             [frontend.state :as state]
             [medley.core :as medley]
@@ -186,8 +187,6 @@
   []
   (let [channel  (name :lsp-updates)
         listener (fn [_ ^js e]
-                   (js/console.debug (str :lsp-updates) e)
-
                    (when-let [{:keys [status payload only-check]} (bean/->clj e)]
                      (case (keyword status)
 
@@ -203,7 +202,7 @@
                                  #(do
                                     ;;(if theme (select-a-plugin-theme id))
                                     (notification/show!
-                                      (str (t :plugin/update) (t :plugins) ": " name " - " (.-version (.-options pl))) :success)
+                                      (t :plugin/update-plugin name (.-version (.-options pl))) :success)
                                     (state/consume-updates-from-coming-plugin! payload true))))
 
                              (do                            ;; register new
@@ -211,7 +210,7 @@
                                  (js/LSPluginCore.register (bean/->js {:key id :url dst}))
                                  (fn [] (when theme (js/setTimeout #(select-a-plugin-theme id) 300))))
                                (notification/show!
-                                 (str (t :plugin/installed) (t :plugins) ": " name) :success)))))
+                                 (t :plugin/installed-plugin name) :success)))))
 
                        :error
                        (let [error-code  (keyword (string/replace (:error-code payload) #"^[\s\:\[]+" ""))
@@ -219,7 +218,7 @@
                              [msg type] (case error-code
 
                                           :no-new-version
-                                          [(str (t :plugin/up-to-date) " :)") :success]
+                                          [(t :plugin/up-to-date ":)") :success]
 
                                           [error-code :error])
                              pending?    (seq (:plugin/updates-pending @state/state))]
@@ -377,7 +376,7 @@
   (when-let [hook (and uuid (str "hook:db:block_" (string/replace (str uuid) "-" "_")))]
     (boolean (seq (get (get-installed-hooks) hook)))))
 
-(def *fenced-code-providers (atom #{}))
+(defonce *fenced-code-providers (atom #{}))
 
 (defn register-fenced-code-renderer
   [pid type {:keys [before subs render edit] :as _opts}]
@@ -390,8 +389,10 @@
 (defn hook-fenced-code-by-type
   [type]
   (when-let [key (and (seq @*fenced-code-providers) type (keyword type))]
-    (first (map #(state/get-plugin-resource % :fenced-code-renderers key)
-                @*fenced-code-providers))))
+    (->> @*fenced-code-providers
+         (map #(state/get-plugin-resource % :fenced-code-renderers key))
+         (remove nil?)
+         (first))))
 
 (def *extensions-enhancer-providers (atom #{}))
 
@@ -630,6 +631,14 @@
            (state/set-state! :plugin/updates-pending))
       (state/pub-event! [:plugin/consume-updates])
       (set-auto-checking! true))))
+
+(defn get-enabled-auto-check-for-updates?
+  []
+  (not (false? (storage/get :lsp-last-auto-updates))))
+
+(defn set-enabled-auto-check-for-updates
+  [v?]
+  (storage/set :lsp-last-auto-updates (boolean v?)))
 
 (defn call-plugin
   [^js pl type payload]

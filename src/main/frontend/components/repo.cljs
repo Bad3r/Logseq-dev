@@ -35,7 +35,7 @@
       [:span.flex.items-center
        (if local?
          (let [local-dir (config/get-local-dir url)
-               graph-name (text-util/get-graph-name-from-path local-dir)]
+               graph-name (text-util/get-graph-name-from-path url)]
            [:a.flex.items-center {:title    local-dir
                                   :on-click #(on-click graph)}
             [:span graph-name (when GraphName [:strong.px-1 "(" GraphName ")"])]
@@ -107,7 +107,7 @@
        [:div.pl-1.content.mt-3
 
         [:div
-         [:h2.text-lg.font-medium.my-4 (str (t :graph/local-graphs) ":")]
+         [:h2.text-lg.font-medium.my-4 (t :graph/local-graphs)]
          (when (seq local-graphs)
            (repos-inner local-graphs))
 
@@ -123,7 +123,7 @@
           [:div
            [:hr]
            [:div.flex.align-items.justify-between
-            [:h2.text-lg.font-medium.my-4 (str (t :graph/remote-graphs) ":")]
+            [:h2.text-lg.font-medium.my-4 (t :graph/remote-graphs)]
             [:div
              (ui/button
               [:span.flex.items-center "Refresh"
@@ -146,14 +146,14 @@
         repo-links (mapv
                     (fn [{:keys [url remote? GraphName GraphUUID] :as graph}]
                       (let [local? (config/local-db? url)
-                            repo-path (if local? (db/get-repo-name url) GraphName )
-                            short-repo-name (if local? (text-util/get-graph-name-from-path repo-path) GraphName)]
+                            repo-url (if local? (db/get-repo-name url) GraphName)
+                            short-repo-name (if local? (text-util/get-graph-name-from-path repo-url) GraphName)]
                         (when short-repo-name
                           {:title        [:span.flex.items-center.whitespace-nowrap short-repo-name
                                           (when remote? [:span.pl-1.flex.items-center
                                                          {:title (str "<" GraphName "> #" GraphUUID)}
                                                          (ui/icon "cloud" {:size 18})])]
-                           :hover-detail repo-path ;; show full path on hover
+                           :hover-detail repo-url ;; show full path on hover
                            :options      {:on-click (fn [e]
                                                       (if (gobj/get e "shiftKey")
                                                         (state/pub-event! [:graph/open-new-window url])
@@ -232,7 +232,7 @@
                                            "origin-top-right.absolute.left-0.mt-2.rounded-md.shadow-lg")}
                            (> (count repos) 1)              ; show switch to if there are multiple repos
                            (assoc :links-header [:div.font-medium.text-sm.opacity-70.px-4.pt-2.pb-1.flex.flex-row.justify-between.items-center
-                                                 [:div "Switch to:"]
+                                                 [:div (t :left-side-bar/switch)]
                                                  (when (and (file-sync/enable-sync?) login?)
                                                    (if remotes-loading?
                                                      (ui/loading "")

@@ -239,7 +239,7 @@
                     (swap! *title-value gp-util/unquote-string)
                     (gobj/set (rum/deref input-ref) "value" @*title-value))
                   (cond
-                    (= old-name @*title-value)
+                    (or (= old-name @*title-value) (and whiteboard-page? (string/blank? @*title-value)))
                     (reset! *edit? false)
 
                     (string/blank? @*title-value)
@@ -819,7 +819,7 @@
       [:div.mt-3.text-center.sm:mt-0.sm:ml-4.sm:text-left
        [:h3#modal-headline.text-lg.leading-6.font-medium
         (if orphaned-pages?
-          (str (t :remove-orphaned-pages) "?")
+          (t :remove-orphaned-pages)
           (t :page/delete-confirmation))]]]
 
      [:table.table-auto.cp__all_pages_table.mt-4
@@ -855,7 +855,7 @@
                     (close-fn)
                     (doseq [page-name (map :block/name pages)]
                       (page-handler/delete! page-name #()))
-                    (notification/show! (str (t :tips/all-done) "!") :success)
+                    (notification/show! (t :tips/all-done) :success)
                     (js/setTimeout #(refresh-fn) 200)))]]))
 
 (rum/defc pagination
@@ -872,7 +872,7 @@
         has-next? (< current total-pages)
         prev-page (if (= 1 current) 1 (dec current))
         next-page (if (= total-pages current) total-pages (inc current))]
-    [:div.flex.items-center.noselect
+    [:div.flex.items-center.select-none
      (when has-prev?
        [[:a.fade-link.flex
          {:on-click #(on-change 1)}
@@ -1040,7 +1040,7 @@
          [:div.r.flex.items-center.justify-between
           [:div
            (ui/tippy
-            {:html  [:small (str (t :page/show-whiteboards) " ?")]
+            {:html  [:small (t :page/show-whiteboards)]
              :arrow true}
             [:a.button.whiteboard
              {:class    (util/classnames [{:active (boolean @*whiteboard?)}])
@@ -1048,7 +1048,7 @@
              (ui/icon "whiteboard" {:extension? true :style {:fontSize ui/icon-size}})])]
           [:div
            (ui/tippy
-            {:html  [:small (str (t :page/show-journals) " ?")]
+            {:html  [:small (t :page/show-journals)]
              :arrow true}
             [:a.button.journal
              {:class    (util/classnames [{:active (boolean @*journal?)}])

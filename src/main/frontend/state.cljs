@@ -123,6 +123,7 @@
      :editor/args                           nil
      :editor/on-paste?                      false
      :editor/last-key-code                  nil
+     :editor/block-op-type                  nil             ;; :cut, :copy
 
      ;; Stores deleted refed blocks, indexed by repo
      :editor/last-replace-ref-content-tx    nil
@@ -274,6 +275,7 @@
 
      :ui/loading?                           {}
      :feature/enable-sync?                  (storage/get :logseq-sync-enabled)
+     :feature/enable-sync-diff-merge?       (storage/get :logseq-sync-diff-merge-enabled)
 
      :file/rename-event-chan                (async/chan 100)
      :ui/find-in-page                       nil
@@ -593,6 +595,10 @@ Similar to re-frame subscriptions"
   []
   (sub :feature/enable-sync?))
 
+(defn enable-sync-diff-merge?
+  []
+  (sub :feature/enable-sync-diff-merge?))
+
 (defn enable-whiteboards?
   ([]
    (enable-whiteboards? (get-current-repo)))
@@ -760,7 +766,7 @@ Similar to re-frame subscriptions"
   (when-let [graphs (seq (get-in @state [:file-sync/remote-graphs :graphs]))]
     (some #(when (= (:GraphUUID %) (str uuid)) %) graphs)))
 
-(defn get-remote-graph-usage 
+(defn get-remote-graph-usage
   []
   (when-let [graphs (seq (get-in @state [:file-sync/remote-graphs :graphs]))]
     (->> graphs
@@ -969,7 +975,7 @@ Similar to re-frame subscriptions"
    (set-selection-blocks! blocks :down))
   ([blocks direction]
    (when (seq blocks)
-     (let [blocks (util/sort-by-height (remove nil? blocks))]
+     (let [blocks (vec (util/sort-by-height (remove nil? blocks)))]
        (swap! state assoc
              :selection/mode true
              :selection/blocks blocks
@@ -1017,7 +1023,8 @@ Similar to re-frame subscriptions"
   (swap! state assoc
          :selection/mode true
          :selection/blocks (-> (conj (vec (:selection/blocks @state)) block)
-                               (util/sort-by-height))
+                               util/sort-by-height
+                               vec)
          :selection/direction direction))
 
 (defn drop-last-selection-block!
@@ -1028,9 +1035,11 @@ Similar to re-frame subscriptions"
         last-block (if up?
                      (first blocks)
                      (peek (vec blocks)))
-        blocks' (if up?
-                  (rest blocks)
-                  (pop (vec blocks)))]
+        blocks' (-> (if up?
+                      (rest blocks)
+                      (pop (vec blocks)))
+                    util/sort-by-height
+                    vec)]
     (swap! state assoc
            :selection/mode true
            :selection/blocks blocks')
@@ -1721,8 +1730,10 @@ Similar to re-frame subscriptions"
 (defn pub-event!
   {:malli/schema [:=> [:cat vector?] :any]}
   [payload]
-  (let [chan (get-events-chan)]
-    (async/put! chan payload)))
+  (let [d (p/deferred)
+        chan (get-events-chan)]
+    (async/put! chan [payload d])
+    d))
 
 (defn get-export-block-text-indent-style []
   (:copy/export-block-text-indent-style @state))
@@ -1851,6 +1862,14 @@ Similar to re-frame subscriptions"
 (defn get-last-key-code
   []
   (:editor/last-key-code @state))
+
+(defn set-block-op-type!
+  [op-type]
+  (set-state! :editor/block-op-type op-type))
+
+(defn get-block-op-type
+  []
+  (:editor/block-op-type @state))
 
 (defn feature-http-server-enabled?
   []
@@ -2025,9 +2044,10 @@ Similar to re-frame subscriptions"
                    (fn [old-value] (merge old-value m)))))
 
 (defn http-proxy-enabled-or-val? []
-  (when-let [agent-opts (sub [:electron/user-cfgs :settings/agent])]
-    (when (every? not-empty (vals agent-opts))
-      (str (:protocol agent-opts) "://" (:host agent-opts) ":" (:port agent-opts)))))
+  (when-let [{:keys [type protocol host port] :as agent-opts} (sub [:electron/user-cfgs :settings/agent])]
+    (when (and  (not (contains? #{"system"} type))
+                (every? not-empty (vals agent-opts)))
+      (str protocol "://" host ":" port))))
 
 (defn set-mobile-app-state-change
   [is-active?]
