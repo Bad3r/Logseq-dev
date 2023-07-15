@@ -16,7 +16,7 @@
             [frontend.handler.ui :as ui-handler]
             [frontend.state :as state]
             [frontend.ui :as ui]
-            [frontend.util :as util]            
+            [frontend.util :as util]
             [frontend.config :as config]
             [frontend.modules.editor.undo-redo :as undo-redo]
             [goog.object :as gobj]
@@ -107,10 +107,10 @@
   (let [state (undo-redo/get-state)
         page-only-mode? (state/sub :history/page-only-mode?)]
     [:div.ml-4
-     [:div.ml-3.font-bold (if page-only-mode? "page only" "global")]
+     [:div.ml-3.font-bold (if page-only-mode? (t :right-side-bar/history-pageonly) (t :right-side-bar/history-global))]
      [:div.p-4 [:.ml-4.mb-2
-                (history-stack "Undos" (rum/react (:undo-stack state)))
-                (history-stack "Redos" (rum/react (:redo-stack state)))]]]))
+                (history-stack (t :right-side-bar/history-undos) (rum/react (:undo-stack state)))
+                (history-stack (t :right-side-bar/history-redos) (rum/react (:redo-stack state)))]]]))
 
 (defn build-sidebar-item
   [repo idx db-id block-type]
@@ -159,7 +159,7 @@
        [:div.ml-2
         (page-cp repo page-name)]])
 
-    :page-presentation
+    :page-slide-view
     (let [page-name (:block/name (db/entity db-id))]
       [[:a.page-title {:href (rfe/href :page {:name page-name})}
         (db-model/get-page-original-name page-name)]

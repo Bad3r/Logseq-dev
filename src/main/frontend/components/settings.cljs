@@ -148,8 +148,8 @@
            :height 500}]]])
 
 (defn row-with-button-action
-  [{:keys [left-label action button-label href on-click desc -for stretch]}]
-  [:div.it.sm:grid.sm:grid-cols-3.sm:gap-4.sm:items-start
+  [{:keys [left-label action button-label href on-click desc -for]}]
+  [:div.it.sm:grid.sm:grid-cols-3.sm:gap-4.sm:items-center
 
    ;; left column
    [:label.block.text-sm.font-medium.leading-5.opacity-70
@@ -157,17 +157,16 @@
     left-label]
 
    ;; right column
-   [:div.mt-1.sm:mt-0.sm:col-span-2
-    {:style {:display "flex" :gap "0.5rem" :align-items "center"}}
-    [:div {:style (when stretch {:width "100%"})}
-     (if action action (ui/button
-                          button-label
-                          :class    "text-sm p-1"
-                          :href     href
-                          :on-click on-click))]
+   [:div.mt-1.sm:mt-0.sm:col-span-2.flex.items-center
+    {:style {:gap "0.5rem"}}
+    [:div (if action action (ui/button
+                              button-label
+                              :class    "text-sm p-1"
+                              :href     href
+                              :on-click on-click))]
     (when-not (or (util/mobile?)
                   (mobile-util/native-platform?))
-      [:div.text-sm desc])]])
+      [:div.text-sm.flex desc])]])
 
 (defn edit-config-edn []
   (row-with-button-action
@@ -757,9 +756,9 @@
    [:div.text-sm.my-4
     (ui/admonition
      :tip
-     [:p "If you have Logseq Sync enabled, you can view a page's edit history directly. This section is for tech-savvy only."])
+     [:p (t :settings-page/git-tip)])
     [:span.text-sm.opacity-50.my-4
-     "To view page's edit history, click the three horizontal dots in the top-right corner and select \"View page history\"."]
+     (t :settings-page/git-desc-1)]
     [:br][:br]
     [:span.text-sm.opacity-50.my-4
      "For professional users, Logseq also supports using "]
@@ -799,10 +798,29 @@
                (file-sync-handler/set-sync-enabled! (not enabled?)))
              true))
 
+(rum/defc sync-diff-merge-enabled-switcher
+  [enabled?]
+  (ui/toggle enabled?
+             (fn []
+               (file-sync-handler/set-sync-diff-merge-enabled! (not enabled?)))
+             true))
+
 (defn sync-switcher-row [enabled?]
   (row-with-button-action
    {:left-label (t :settings-page/sync)
     :action (sync-enabled-switcher enabled?)}))
+
+(defn sync-diff-merge-switcher-row [enabled?]
+  (row-with-button-action
+   {:left-label (str (t :settings-page/sync-diff-merge) " (Experimental!)") ;; Not included in i18n to avoid outdating translations
+    :action (sync-diff-merge-enabled-switcher enabled?)
+    :desc (ui/tippy {:html        [:div
+                                   [:div (t :settings-page/sync-diff-merge-desc)]
+                                   [:div (t :settings-page/sync-diff-merge-warn)]]
+                     :class       "tippy-hover ml-2"
+                     :interactive true
+                     :disabled    false}
+                    (svg/info))}))
 
 (rum/defc whiteboards-enabled-switcher
   [enabled?]
@@ -860,7 +878,7 @@
                                       :min-width "0.5rem"
                                       :max-width "100%"}}]])]))
 
-(rum/defc settings-account < rum/reactive
+(rum/defc ^:large-vars/cleanup-todo settings-account < rum/reactive
   []
   (let [current-graph-uuid (state/sub-current-file-sync-graph-uuid)
         graph-usage (state/get-remote-graph-usage)
@@ -1013,6 +1031,7 @@
         enable-journals? (state/enable-journals? current-repo)
         enable-flashcards? (state/enable-flashcards? current-repo)
         enable-sync? (state/enable-sync?)
+        enable-sync-diff-merge? (state/enable-sync-diff-merge?)
         enable-whiteboards? (state/enable-whiteboards? current-repo)
         logged-in? (user-handler/logged-in?)]
     [:div.panel-wrap.is-features.mb-8
@@ -1057,10 +1076,13 @@
      (when-not web-platform?
        [:<>
         [:div.it.sm:grid.sm:grid-cols-3.sm:gap-4.sm:items-start
-         [:label.flex.font-medium.leading-5.self-start.mt-1 (ui/icon  (if logged-in? "lock-open" "lock") {:class "mr-1"}) (t :settings-page/beta-features)]]
+         [:label.flex.font-medium.leading-5.self-start.mt-1
+          (ui/icon  (if logged-in? "lock-open" "lock") {:class "mr-1"}) (t :settings-page/beta-features)]]
         [:div.flex.flex-col.gap-4
          {:class (when-not user-handler/alpha-or-beta-user? "opacity-50 pointer-events-none cursor-not-allowed")}
          (sync-switcher-row enable-sync?)
+         (when enable-sync?
+           (sync-diff-merge-switcher-row enable-sync-diff-merge?))
          [:div.text-sm
           (t :settings-page/sync-desc-1)
           [:a.mx-1 {:href "https://blog.logseq.com/how-to-setup-and-use-logseq-sync/"
