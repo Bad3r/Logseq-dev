@@ -362,13 +362,15 @@
 (defmethod handle :file/not-matched-from-disk [[_ path disk-content db-content]]
   (state/clear-edit!)
   (when-let [repo (state/get-current-repo)]
-    (when (and disk-content db-content
-               (not= (util/trim-safe disk-content) (util/trim-safe db-content)))
-      (state/set-modal! #(diff/local-file repo path disk-content db-content)
-                        {:label "diff__cp"}))))
-
-(defmethod handle :modal/display-file-version [[_ path content hash]]
-  (state/set-modal! #(git-component/file-specific-version path hash content)))
+    ;; Introduce a delay using js/setTimeout
+    (js/setTimeout
+     (fn []
+        ;; Proceed with the original when form
+       (when (and disk-content db-content
+                  (not= (util/trim-safe disk-content) (util/trim-safe db-content)))
+         (state/set-modal! #(diff/local-file repo path disk-content db-content)
+                           {:label "diff__cp"})))
+     20000))) ; 1000 ms (1 second) delay
 
 ;; Hook on a graph is ready to be shown to the user.
 ;; It's different from :graph/restored, as :graph/restored is for window reloaded
