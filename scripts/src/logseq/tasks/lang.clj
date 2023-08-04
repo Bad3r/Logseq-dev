@@ -159,11 +159,12 @@
   "Allows certain keys in a language to have the same translation
    as English. Happens more in romance languages but pretty rare otherwise"
   {:fr #{:port :type :help/docs :search-item/page :shortcut.category/navigating :text/image
-         :settings-of-plugins}
+         :settings-of-plugins :code :on-boarding/section-pages :paginates/pages :right-side-bar/history-global
+         :shortcut.category/plugins :whiteboard/rectangle :whiteboard/triangle}
    :de #{:graph :host :plugins :port :right-side-bar/whiteboards :search-item/block
          :settings-of-plugins :search-item/whiteboard :shortcut.category/navigating
          :settings-page/enable-tooltip :settings-page/enable-whiteboards :settings-page/plugin-system}
-   :es #{:settings-page/tab-general :settings-page/tab-editor :whiteboard/color}
+   :es #{:settings-page/tab-general :settings-page/tab-editor :whiteboard/color :search/command-palette-tip-1 :right-side-bar/history-global}
    :it #{:plugins}
    :nl #{:plugins :type :left-side-bar/nav-recent-pages :plugin/update}
    :pl #{:port}
@@ -174,7 +175,7 @@
    :nb-NO #{:port :type :whiteboard :right-side-bar/flashcards :right-side-bar/whiteboards 
             :search-item/whiteboard :settings-page/enable-flashcards :settings-page/enable-whiteboards 
             :settings-page/tab-editor :shortcut.category/whiteboard :whiteboard/medium 
-            :whiteboard/twitter-url :whiteboard/youtube-url}
+            :whiteboard/twitter-url :whiteboard/youtube-url :right-side-bar/history-global}
    :tr #{:help/awesome-logseq}
    })
 
