@@ -43,35 +43,38 @@
 
    (ui/menu-link
     {:key "cut"
-     :on-click #(editor-handler/cut-selection-blocks true)
-     :shortcut (ui/keyboard-shortcut-from-config :editor/cut)}
-    (t :editor/cut))
+     :on-click #(editor-handler/cut-selection-blocks true)}
+    (t :editor/cut)
+    (ui/keyboard-shortcut-from-config :editor/cut))
    (ui/menu-link
     {:key "delete"
      :on-click #(do (editor-handler/delete-selection %)
-                    (state/hide-custom-context-menu!))
-     :shortcut (ui/keyboard-shortcut-from-config :editor/delete)}
-    (t :editor/delete-selection))
+                    (state/hide-custom-context-menu!))}
+    (t :editor/delete-selection)
+    (ui/keyboard-shortcut-from-config :editor/delete))
    (ui/menu-link
     {:key "copy"
-     :on-click editor-handler/copy-selection-blocks
-     :shortcut (ui/keyboard-shortcut-from-config :editor/copy)}
-    (t :editor/copy))
+     :on-click editor-handler/copy-selection-blocks}
+    (t :editor/copy)
+    (ui/keyboard-shortcut-from-config :editor/copy))
    (ui/menu-link
     {:key "copy as"
      :on-click (fn [_]
                  (let [block-uuids (editor-handler/get-selected-toplevel-block-uuids)]
                    (state/set-modal!
                     #(export/export-blocks block-uuids {:whiteboard? false}))))}
-    (t :content/copy-export-as))
+    (t :content/copy-export-as)
+    nil)
    (ui/menu-link
     {:key "copy block refs"
      :on-click editor-handler/copy-block-refs}
-    (t :content/copy-block-ref))
+    (t :content/copy-block-ref)
+    nil)
    (ui/menu-link
     {:key "copy block embeds"
      :on-click editor-handler/copy-block-embeds}
-    (t :content/copy-block-emebed))
+    (t :content/copy-block-emebed)
+    nil)
 
    [:hr.menu-separator]
 
@@ -79,32 +82,34 @@
      (ui/menu-link
       {:key "Make a Card"
        :on-click #(srs/batch-make-cards!)}
-      (t :context-menu/make-a-flashcard)))
+      (t :context-menu/make-a-flashcard)
+      nil))
 
    (ui/menu-link
      {:key "Toggle number list"
       :on-click #(state/pub-event! [:editor/toggle-own-number-list (state/get-selection-block-ids)])}
-     (t :context-menu/toggle-number-list))
+     (t :context-menu/toggle-number-list)
+     nil)
 
    (ui/menu-link
     {:key "cycle todos"
-     :on-click editor-handler/cycle-todos!
-     :shortcut (ui/keyboard-shortcut-from-config :editor/cycle-todo)}
-    (t :editor/cycle-todo))
+     :on-click editor-handler/cycle-todos!}
+    (t :editor/cycle-todo)
+    (ui/keyboard-shortcut-from-config :editor/cycle-todo))
 
    [:hr.menu-separator]
 
    (ui/menu-link
     {:key "Expand all"
-     :on-click editor-handler/expand-all-selection!
-     :shortcut (ui/keyboard-shortcut-from-config :editor/expand-block-children)}
-    (t :editor/expand-block-children))
+     :on-click editor-handler/expand-all-selection!}
+    (t :editor/expand-block-children)
+    (ui/keyboard-shortcut-from-config :editor/expand-block-children))
 
    (ui/menu-link
     {:key "Collapse all"
-     :on-click editor-handler/collapse-all-selection!
-     :shortcut (ui/keyboard-shortcut-from-config :editor/collapse-block-children)}
-    (t :editor/collapse-block-children))])
+     :on-click editor-handler/collapse-all-selection!}
+    (t :editor/collapse-block-children)
+    (ui/keyboard-shortcut-from-config :editor/collapse-block-children))])
 
 (defonce *template-including-parent? (atom nil))
 
@@ -163,7 +168,8 @@
         :on-click (fn [e]
                     (util/stop e)
                     (reset! edit? true))}
-       (t :context-menu/make-a-template)))))
+       (t :context-menu/make-a-template)
+       nil))))
 
 (rum/defc ^:large-vars/cleanup-todo block-context-menu-content <
   shortcut/disable-all-shortcuts
@@ -184,9 +190,9 @@
          (ui/menu-link
           {:key      "Open in sidebar"
            :on-click (fn [_e]
-                       (editor-handler/open-block-in-sidebar! block-id))
-           :shortcut ["⇧" "click"]}
-          (t :content/open-in-sidebar))
+                       (editor-handler/open-block-in-sidebar! block-id))}
+          (t :content/open-in-sidebar)
+          ["⇧" "click"])
 
          [:hr.menu-separator]
 
@@ -194,13 +200,15 @@
           {:key      "Copy block ref"
            :on-click (fn [_e]
                        (editor-handler/copy-block-ref! block-id block-ref/->block-ref))}
-          (t :content/copy-block-ref))
+          (t :content/copy-block-ref)
+          nil)
 
          (ui/menu-link
           {:key      "Copy block embed"
            :on-click (fn [_e]
                        (editor-handler/copy-block-ref! block-id #(util/format "{{embed ((%s))}}" %)))}
-          (t :content/copy-block-emebed))
+          (t :content/copy-block-emebed)
+          nil)
 
          ;; TODO Logseq protocol mobile support
          (when (util/electron?)
@@ -211,26 +219,28 @@
                                tap-f (fn [block-id]
                                        (url-util/get-logseq-graph-uuid-url nil current-repo block-id))]
                            (editor-handler/copy-block-ref! block-id tap-f)))}
-            (t :content/copy-block-url)))
+            (t :content/copy-block-url)
+            nil))
 
          (ui/menu-link
           {:key      "Copy as"
            :on-click (fn [_]
                        (state/set-modal! #(export/export-blocks [block-id] {:whiteboard? false})))}
-          (t :content/copy-export-as))
+          (t :content/copy-export-as)
+          nil)
 
          (ui/menu-link
           {:key      "Cut"
            :on-click (fn [_e]
-                       (editor-handler/cut-block! block-id))
-           :shortcut (ui/keyboard-shortcut-from-config :editor/cut)}
-          (t :editor/cut))
+                       (editor-handler/cut-block! block-id))}
+          (t :editor/cut)
+          (ui/keyboard-shortcut-from-config :editor/cut))
 
          (ui/menu-link
           {:key      "delete"
-           :on-click #(editor-handler/delete-block-aux! block true)
-           :shortcut (ui/keyboard-shortcut-from-config :editor/delete)}
-          (t :editor/delete-selection))
+           :on-click #(editor-handler/delete-block-aux! block true)}
+          (t :editor/delete-selection)
+          (ui/keyboard-shortcut-from-config :editor/delete))
 
          [:hr.menu-separator]
 
@@ -241,35 +251,38 @@
            (ui/menu-link
             {:key      "Preview Card"
              :on-click #(srs/preview (:db/id block))}
-            (t :context-menu/preview-flashcard))
+            (t :context-menu/preview-flashcard)
+            nil)
            (state/enable-flashcards?)
            (ui/menu-link
             {:key      "Make a Card"
              :on-click #(srs/make-block-a-card! block-id)}
-            (t :context-menu/make-a-flashcard))
+            (t :context-menu/make-a-flashcard)
+            nil)
            :else
            nil)
 
          (ui/menu-link
            {:key "Toggle number list"
             :on-click #(state/pub-event! [:editor/toggle-own-number-list (state/get-selection-block-ids)])}
-           (t :context-menu/toggle-number-list))
+           (t :context-menu/toggle-number-list)
+           nil)
 
          [:hr.menu-separator]
 
          (ui/menu-link
           {:key      "Expand all"
            :on-click (fn [_e]
-                       (editor-handler/expand-all! block-id))
-           :shortcut (ui/keyboard-shortcut-from-config :editor/expand-block-children)}
-          (t :editor/expand-block-children))
+                       (editor-handler/expand-all! block-id))}
+          (t :editor/expand-block-children)
+          (ui/keyboard-shortcut-from-config :editor/expand-block-children))
 
          (ui/menu-link
           {:key      "Collapse all"
            :on-click (fn [_e]
-                       (editor-handler/collapse-all! block-id {}))
-           :shortcut (ui/keyboard-shortcut-from-config :editor/collapse-block-children)}
-          (t :editor/collapse-block-children))
+                       (editor-handler/collapse-all! block-id {}))}
+          (t :editor/collapse-block-children)
+          (ui/keyboard-shortcut-from-config :editor/collapse-block-children))
 
          (when (state/sub [:plugin/simple-commands])
            (when-let [cmds (state/get-plugins-commands-with-type :block-context-menu-item)]
@@ -278,14 +291,16 @@
                 {:key      key
                  :on-click #(commands/exec-plugin-simple-command!
                              pid (assoc cmd :uuid block-id) action)}
-                label))))
+                label
+                nil))))
 
          (when (state/sub [:ui/developer-mode?])
            (ui/menu-link
             {:key      "(Dev) Show block data"
              :on-click (fn []
                          (dev-common-handler/show-entity-data [:block/uuid block-id]))}
-            (t :dev/show-block-data)))
+            (t :dev/show-block-data)
+            nil))
 
          (when (state/sub [:ui/developer-mode?])
            (ui/menu-link
@@ -293,7 +308,8 @@
              :on-click (fn []
                          (let [block (db/pull [:block/uuid block-id])]
                            (dev-common-handler/show-content-ast (:block/content block) (:block/format block))))}
-            (t :dev/show-block-ast)))])))
+            (t :dev/show-block-ast)
+            nil))])))
 
 (rum/defc block-ref-custom-context-menu-content
   [block block-ref-id]
@@ -305,25 +321,29 @@
                    (state/sidebar-add-block!
                     (state/get-current-repo)
                     block-ref-id
-                    :block-ref))
-       :shortcut ["⇧" "click"]}
-      (t :content/open-in-sidebar))
+                    :block-ref))}
+      (t :content/open-in-sidebar)
+      ["⇧" "click"])
      (ui/menu-link
       {:key "copy"
        :on-click (fn [] (editor-handler/copy-current-ref block-ref-id))}
-      (t :content/copy-ref))
+      (t :content/copy-ref)
+      nil)
      (ui/menu-link
       {:key "delete"
        :on-click (fn [] (editor-handler/delete-current-ref! block block-ref-id))}
-      (t :content/delete-ref))
+      (t :content/delete-ref)
+      nil)
      (ui/menu-link
       {:key "replace-with-text"
        :on-click (fn [] (editor-handler/replace-ref-with-text! block block-ref-id))}
-      (t :content/replace-with-text))
+      (t :content/replace-with-text)
+      nil)
      (ui/menu-link
       {:key "replace-with-embed"
        :on-click (fn [] (editor-handler/replace-ref-with-embed! block block-ref-id))}
-      (t :content/replace-with-embed))]))
+      (t :content/replace-with-embed)
+      nil)]))
 
 (rum/defc page-title-custom-context-menu-content
   [page]
@@ -332,7 +352,7 @@
       [:.menu-links-wrapper
        (for [{:keys [title options]} page-menu-options]
          (rum/with-key
-           (ui/menu-link options title)
+           (ui/menu-link options title nil)
            title))])))
 
 ;; TODO: content could be changed

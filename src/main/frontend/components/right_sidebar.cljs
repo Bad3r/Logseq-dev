@@ -176,24 +176,24 @@
   [db-id idx type collapsed? block-count toggle-fn]
   [:.menu-links-wrapper.text-left
    {:on-click toggle-fn}
-   (ui/menu-link {:on-click #(state/sidebar-remove-block! idx)} (t :right-side-bar/pane-close))
-   (when (> block-count 1) (ui/menu-link {:on-click #(state/sidebar-remove-rest! db-id)} (t :right-side-bar/pane-clese-others)))
+   (ui/menu-link {:on-click #(state/sidebar-remove-block! idx)} (t :right-side-bar/pane-close) nil)
+   (when (> block-count 1) (ui/menu-link {:on-click #(state/sidebar-remove-rest! db-id)} (t :right-side-bar/pane-clese-others) nil))
    (when (> block-count 1) (ui/menu-link {:on-click (fn []
                                                       (state/clear-sidebar-blocks!)
-                                                      (state/hide-right-sidebar!))} (t :right-side-bar/pane-clese-all)))
+                                                      (state/hide-right-sidebar!))} (t :right-side-bar/pane-clese-all) nil))
    (when (or (not collapsed?) (> block-count 1)) [:hr.menu-separator])
-   (when-not collapsed? (ui/menu-link {:on-click #(state/sidebar-block-toggle-collapse! db-id)} (t :right-side-bar/pane-collapse)))
-   (when (> block-count 1) (ui/menu-link {:on-click #(state/sidebar-block-collapse-rest! db-id)} (t :right-side-bar/pane-collapse-others)))
-   (when (> block-count 1) (ui/menu-link {:on-click #(state/sidebar-block-set-collapsed-all! true)} (t :right-side-bar/pane-collapse-all)))
+   (when-not collapsed? (ui/menu-link {:on-click #(state/sidebar-block-toggle-collapse! db-id)} (t :right-side-bar/pane-collapse) nil))
+   (when (> block-count 1) (ui/menu-link {:on-click #(state/sidebar-block-collapse-rest! db-id)} (t :right-side-bar/pane-collapse-others) nil))
+   (when (> block-count 1) (ui/menu-link {:on-click #(state/sidebar-block-set-collapsed-all! true)} (t :right-side-bar/pane-collapse-all) nil))
    (when (or collapsed? (> block-count 1)) [:hr.menu-separator])
-   (when collapsed? (ui/menu-link {:on-click #(state/sidebar-block-toggle-collapse! db-id)} (t :right-side-bar/pane-expand)))
-   (when (> block-count 1) (ui/menu-link {:on-click #(state/sidebar-block-set-collapsed-all! false)}  (t :right-side-bar/pane-expand-all)))
+   (when collapsed? (ui/menu-link {:on-click #(state/sidebar-block-toggle-collapse! db-id)} (t :right-side-bar/pane-expand) nil))
+   (when (> block-count 1) (ui/menu-link {:on-click #(state/sidebar-block-set-collapsed-all! false)}  (t :right-side-bar/pane-expand-all) nil))
    (when (= type :page) [:hr.menu-separator])
    (when (= type :page)
      (let [name (:block/name (db/entity db-id))]
        (ui/menu-link {:href (if (db-model/whiteboard-page? name)
                               (rfe/href :whiteboard {:name name})
-                              (rfe/href :page {:name name}))} (t :right-side-bar/pane-open-as-page))))])
+                              (rfe/href :page {:name name}))} (t :right-side-bar/pane-open-as-page) nil)))])
 
 (rum/defc drop-indicator
   [idx drag-to]
@@ -229,8 +229,9 @@
                    (when collapsed? "collapsed")]}
           (let [[title component] item]
             [:div.flex.flex-col.w-full.relative
-             [:.flex.flex-row.justify-between.pr-2.sidebar-item-header.color-level
-              {:draggable true
+             [:.flex.flex-row.justify-between.pr-2.sidebar-item-header.color-level.rounded-t-md
+              {:class (when collapsed? "rounded-b-md")
+               :draggable true
                :on-drag-start (fn [event]
                                 (editor-handler/block->data-transfer! (:block/name (db/entity db-id)) event)
                                 (reset! *drag-from idx))
@@ -388,6 +389,7 @@
     [:div.cp__right-sidebar-inner.flex.flex-col.h-full#right-sidebar-container
 
      [:div.cp__right-sidebar-scrollable
+      {:on-drag-over util/stop}
       [:div.cp__right-sidebar-topbar.flex.flex-row.justify-between.items-center.px-2.h-12
        [:div.cp__right-sidebar-settings.hide-scrollbar.gap-1 {:key "right-sidebar-settings"}
         [:div.text-sm
@@ -427,6 +429,9 @@
 (rum/defcs sidebar < rum/reactive
   [state]
   (let [blocks (state/sub-right-sidebar-blocks)
+        blocks (if (empty? blocks)
+                 [[(state/get-current-repo) "contents" :contents nil]]
+                 blocks)
         sidebar-open? (state/sub :ui/sidebar-open?)
         width (state/sub :ui/sidebar-width)
         repo (state/sub :git/current-repo)]
