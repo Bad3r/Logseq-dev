@@ -305,10 +305,10 @@
   resolved "https://registry.yarnpkg.com/@capacitor/haptics/-/haptics-4.0.1.tgz#8113c757f9bce3cd6618f6aadda47e7aa7a92069"
   integrity sha512-ZLVoLdK1Md/xIRRrDOnrLCKGRg8UENY1ShpKcysPN1z1MgcpvB/9Nbqczm3RH24zyo3MP/7homkqMzUGxPBlwQ==
 
-"@capacitor/ios@^4.0.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@capacitor/ios/-/ios-4.2.0.tgz#718aef107044af35f574a32c17230cb638399ed6"
-  integrity sha512-YOncOJHMB1QhgmWBk3Ml8IT+KoN131zlmtCBtx9Szzc6/LvzG/NMojVqfl996k37gRw9sYHrvNP01sn22IijSA==
+"@capacitor/ios@^4.8.1":
+  version "4.8.1"
+  resolved "https://registry.yarnpkg.com/@capacitor/ios/-/ios-4.8.1.tgz#d0bcd209fee5a32ff5330f370a8f348c0ba196e6"
+  integrity sha512-MSPJBBLS+ueX9r+R6NUQR1nq1pIIbfPp8RgDjvDr5qDMWqVaI+u/I4hqszP5ADFom5PJ2BkPz+MyF2ALWeydsA==
 
 "@capacitor/keyboard@^4.0.0":
   version "4.0.1"
