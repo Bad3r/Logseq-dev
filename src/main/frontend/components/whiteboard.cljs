@@ -4,6 +4,7 @@
             [frontend.components.content :as content]
             [frontend.components.onboarding.quick-tour :as quick-tour]
             [frontend.components.page :as page]
+            [frontend.components.page-menu :as page-menu]
             [frontend.components.reference :as reference]
             [frontend.context.i18n :refer [t]]
             [frontend.db-mixins :as db-mixins]
@@ -151,35 +152,36 @@
 
 (rum/defc dashboard-preview-card
   [page-name {:keys [checked on-checked-change show-checked?]}]
-  [:div.dashboard-card.dashboard-preview-card.cursor-pointer.hover:shadow-lg
-   {:data-checked checked
-    :style {:filter (if (and show-checked? (not checked)) "opacity(0.5)" "none")}
-    :on-click
-    (fn [e]
-      (util/stop e)
-      (if show-checked?
-        (on-checked-change (not checked))
-        (route-handler/redirect-to-whiteboard! page-name)))}
-   [:div.dashboard-card-title
-    [:div.flex.w-full.items-center
-     [:div.dashboard-card-title-name.font-bold
-      (if (model/untitled-page? page-name)
-        [:span.opacity-50 (t :untitled)]
-        (get-page-display-name page-name))]
-     [:div.flex-1]
-     [:div.dashboard-card-checkbox
-      {:tab-index -1
-       :style {:visibility (when show-checked? "visible")}
-       :on-click util/stop-propagation}
-      (ui/checkbox {:checked checked
-                    :on-change (fn [] (on-checked-change (not checked)))})]]
-    [:div.flex.w-full.opacity-50
-     [:div (get-page-human-update-time page-name)]
-     [:div.flex-1]
-     (references-count page-name nil {:hover? true})]]
-   (ui/lazy-visible
-    (fn [] [:div.p-4.h-64.flex.justify-center
-            (tldraw-preview page-name)]))])
+  (let [redirect-to-whiteboard (fn [e]
+                                 (util/stop e)
+                                 (if show-checked?
+                                   (on-checked-change (not checked))
+                                   (route-handler/redirect-to-whiteboard! page-name)))]
+    [:div.dashboard-card.dashboard-preview-card.hover:shadow-lg
+     {:data-checked checked
+      :style {:filter (if (and show-checked? (not checked)) "opacity(0.5)" "none")}}
+     [:div.dashboard-card-title
+      [:div.flex.w-full.items-center
+       [:div.font-bold.cursor-pointer.dashboard-card-title-name
+        {:on-click redirect-to-whiteboard}
+        (if (model/untitled-page? page-name)
+          [:span.opacity-50 (t :untitled)]
+          (get-page-display-name page-name))]
+       [:.mx-2.flex-1 (references-count page-name nil {:hover? true})]
+       (page-menu/page-actions-dropdown page-name)]
+      [:div.flex.w-full.opacity-50
+       [:div.flex-1 (get-page-human-update-time page-name)]
+       [:div.dashboard-card-checkbox
+        {:tab-index -1
+         :style {:visibility (when show-checked? "visible")}
+         :on-click util/stop-propagation}
+        (ui/checkbox {:checked checked
+                      :on-change (fn [] (on-checked-change (not checked)))})]]]
+     [:div.cursor-pointer.overflow-hidden
+      {:on-click redirect-to-whiteboard}
+      (ui/lazy-visible
+       (fn [] [:div.p-4.h-64.flex.justify-center
+               (tldraw-preview page-name)]))]]))
 
 (rum/defc dashboard-create-card
   []
@@ -210,8 +212,8 @@
                          (inc total-whiteboards))
           [checked-page-names set-checked-page-names] (rum/use-state #{})
           has-checked? (not-empty checked-page-names)]
-      [:<>
-       [:h1.select-none.flex.items-center.whiteboard-dashboard-title.title
+      [:.p-6.sm:p-12
+       [:h1.select-none.flex.items-center.mb-6.whiteboard-dashboard-title.title
         [:div (t :all-whiteboards)
          [:span.opacity-50
           (str " · " total-whiteboards)]]
@@ -280,6 +282,8 @@
                         (get-page-display-name page-name)
                         nil
                         false)]
+
+      (page-menu/page-actions-dropdown page-name)
 
       [:div.whiteboard-page-refs
        (references-count page-name
