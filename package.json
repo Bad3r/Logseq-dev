@@ -86,7 +86,7 @@
         "@capacitor/ios": "^4.0.0",
         "@capacitor/keyboard": "^4.0.0",
         "@capacitor/share": "^4.0.0",
-        "@capacitor/splash-screen": "^4.0.0",
+        "@capacitor/splash-screen": "^4.2.0",
         "@capacitor/status-bar": "^4.0.0",
         "@capawesome/capacitor-background-task": "^2.0.0",
         "@excalidraw/excalidraw": "0.15.3",
