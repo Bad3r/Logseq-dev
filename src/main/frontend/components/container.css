@@ -642,6 +642,7 @@ html[data-theme='dark'] {
 
     &.drag-over {
       &::after {
+        z-index: 1000;
         background-color: var(--ls-active-primary-color);
       }
     }
@@ -653,13 +654,10 @@ html[data-theme='dark'] {
     min-height: 100px;
 
     .sidebar-item-header {
-      white-space: nowrap;
-
       .breadcrumb {
         margin-top: 0;
         margin-bottom: 0;
-        text-overflow: ellipsis;
-        overflow: hidden;
+        text-align: left;
       }
     }
 
