@@ -21,7 +21,7 @@
             [frontend.mobile.util :as mobile-util]
             [frontend.modules.shortcut.config :as shortcut-config]
             [frontend.modules.shortcut.core :as shortcut]
-            [frontend.modules.shortcut.data-helper :as shortcut-helper]
+            [frontend.modules.shortcut.utils :as shortcut-utils]
             [frontend.rum :as r]
             [frontend.state :as state]
             [frontend.storage :as storage]
@@ -89,7 +89,7 @@
                 (let [^js el (rum/dom-node state)]
                   ;; Passing aria-label as a prop to TextareaAutosize removes the dash
                   (.setAttribute el "aria-label" "editing block")
-                  (. el addEventListener "mouseup"
+                  (. el addEventListener "select"
                      #(let [start (util/get-selection-start el)
                             end (util/get-selection-end el)]
                         (when (and start end)
@@ -167,7 +167,7 @@
                    sequence)]
     [:span.keyboard-shortcut
      (map-indexed (fn [i key]
-                    (let [key' (shortcut-helper/decorate-binding (str key))]
+                    (let [key' (shortcut-utils/decorate-binding (str key))]
                       [:code {:key i}
                       ;; Display "cmd" rather than "meta" to the user to describe the Mac
                       ;; mod key, because that's what the Mac keyboards actually say.
@@ -507,7 +507,7 @@
 
 (rum/defcs auto-complete <
   (rum/local 0 ::current-idx)
-  (shortcut/mixin :shortcut.handler/auto-complete)
+  (shortcut/mixin* :shortcut.handler/auto-complete)
   [state
    matched
    {:keys [on-chosen
@@ -567,9 +567,10 @@
        :aria-hidden "true"}]]]))
 
 (defn keyboard-shortcut-from-config [shortcut-name]
-  (let [default-binding (:binding (get shortcut-config/all-default-keyboard-shortcuts shortcut-name))
-        custom-binding  (when (state/shortcuts) (get (state/shortcuts) shortcut-name))]
-    (or custom-binding default-binding)))
+  (let [built-in-binding (:binding (get shortcut-config/all-built-in-keyboard-shortcuts shortcut-name))
+        custom-binding  (when (state/shortcuts) (get (state/shortcuts) shortcut-name))
+        binding         (or custom-binding built-in-binding)]
+    (shortcut-utils/decorate-binding binding)))
 
 (rum/defc modal-overlay
   [state close-fn close-backdrop?]
