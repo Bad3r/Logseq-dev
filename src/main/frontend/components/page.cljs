@@ -6,6 +6,7 @@
             [frontend.components.content :as content]
             [frontend.components.editor :as editor]
             [frontend.components.hierarchy :as hierarchy]
+            [frontend.components.page-menu :as page-menu]
             [frontend.components.plugins :as plugins]
             [frontend.components.reference :as reference]
             [frontend.components.svg :as svg]
@@ -309,14 +310,13 @@
                     (date/journal-title->custom-format title)
                     title))
           old-name (or title page-name)]
-      [:h1.page-title.flex.cursor-pointer.gap-1.w-full
+      [:h1.page-title.flex.cursor-pointer.gap-1.w-full.overflow-hidden
        {:class (when-not whiteboard-page? "title")
         :on-mouse-down (fn [e]
                          (when (util/right-click? e)
                            (state/set-state! :page-title/context {:page page-name})))
         :on-click (fn [e]
                     (when-not (= (.-nodeName (.-target e)) "INPUT")
-                      (.preventDefault e)
                       (if (gobj/get e "shiftKey")
                         (when-let [page (db/pull repo '[*] [:block/name page-name])]
                           (state/sidebar-add-block!
@@ -424,7 +424,7 @@
           *all-collapsed? (::all-collapsed? state)
           *current-block-page (::current-page state)
           block-or-whiteboard? (or block? whiteboard?)]
-      [:div.flex-1.page.relative
+      [:div.flex-1.relative.p-6.sm:p-12.rounded-xl.color-level.page
        (merge (if (seq (:block/tags page))
                 (let [page-names (model/get-page-names-by-ids (map :db/id (:block/tags page)))]
                   {:data-page-tags (text-util/build-data-value page-names)})
@@ -437,7 +437,7 @@
          [:div ((state/get-component :whiteboard/tldraw-preview) page-name)] ;; FIXME: this is not reactive
          [:div.relative
           (when (and (not sidebar?) (not block?))
-            [:div.flex.flex-row.space-between
+            [:div.flex.flex-row
              (when (or (mobile-util/native-platform?) (util/mobile?))
                [:div.flex.flex-row.pr-2
                 {:style {:margin-left -15}
@@ -447,8 +447,9 @@
                                    (page-mouse-leave e *control-show?))}
                 (page-blocks-collapse-control title *control-show? *all-collapsed?)])
              (when-not whiteboard?
-               [:div.ls-page-title.flex-1.flex-row.w-full
-                (page-title page-name icon title format fmt-journal?)])
+               [:div.flex-1.flex.items-center.sm:mb-8.mb-8.w-full.ls-page-title
+                (page-title page-name icon title format fmt-journal?)
+                (page-menu/page-actions-dropdown nil)])
              (when (not config/publishing?)
                (when config/lsp-enabled?
                  [:div.flex.flex-row
@@ -737,27 +738,25 @@
 
 (rum/defc page-graph-inner < rum/reactive
   [_page graph dark?]
-   (let [ show-journals-in-page-graph? (rum/react *show-journals-in-page-graph?) ]
-  [:div.sidebar-item.flex-col
-             [:div.flex.items-center.justify-between.mb-0
-              [:span (t :right-side-bar/show-journals)]
-              [:div.mt-1
-               (ui/toggle show-journals-in-page-graph? ;my-val;
-                           (fn []
-                             (let [value (not show-journals-in-page-graph?)]
-                               (reset! *show-journals-in-page-graph? value)
-                               ))
-                          true)]
-              ]
+  (let [show-journals-in-page-graph? (rum/react *show-journals-in-page-graph?)]
+    [:div.sidebar-item.flex-col
+     [:div.flex.items-center.justify-between.mb-0
+      [:span (t :right-side-bar/show-journals)]
+      [:div.mt-1
+       (ui/toggle show-journals-in-page-graph? ;my-val;
+                  (fn []
+                    (let [value (not show-journals-in-page-graph?)]
+                      (reset! *show-journals-in-page-graph? value)))
+                  true)]]
 
-   (graph/graph-2d {:nodes (:nodes graph)
-                    :links (:links graph)
-                    :width 600
-                    :height 600
-                    :dark? dark?
-                    :register-handlers-fn
-                    (fn [graph]
-                      (graph-register-handlers graph (atom nil) (atom nil) dark?))})]))
+     (graph/graph-2d {:nodes (:nodes graph)
+                      :links (:links graph)
+                      :width 600
+                      :height 600
+                      :dark? dark?
+                      :register-handlers-fn
+                      (fn [graph]
+                        (graph-register-handlers graph (atom nil) (atom nil) dark?))})]))
 
 (rum/defc page-graph < db-mixins/query rum/reactive
   []
@@ -804,8 +803,8 @@
   [:th
    {:class [(name key)]}
    [:a.fade-link {:on-click (fn []
-                    (reset! by-item key)
-                    (swap! desc? not))}
+                              (reset! by-item key)
+                              (swap! desc? not))}
     [:span.flex.items-center
      [:span.mr-1 title]
      (when (= @by-item key)
@@ -849,18 +848,18 @@
 
       [:span.pr-2
        (ui/button
-         (t :cancel)
-         :intent "logseq"
-         :on-click close-fn)]
+        (t :cancel)
+        :intent "logseq"
+        :on-click close-fn)]
 
       (ui/button
-        (t :yes)
-        :on-click (fn []
-                    (close-fn)
-                    (doseq [page-name (map :block/name pages)]
-                      (page-handler/delete! page-name #()))
-                    (notification/show! (t :tips/all-done) :success)
-                    (js/setTimeout #(refresh-fn) 200)))]]))
+       (t :yes)
+       :on-click (fn []
+                   (close-fn)
+                   (doseq [page-name (map :block/name pages)]
+                     (page-handler/delete! page-name #()))
+                   (notification/show! (t :tips/all-done) :success)
+                   (js/setTimeout #(refresh-fn) 200)))]]))
 
 (rum/defc pagination
   "Pagination component, like `<< <Prev 1/10 Next> >>`.
@@ -951,10 +950,10 @@
                          (reset! *pages nil)
                          (reset! *current-page 1))]
 
-    [:div.flex-1.cp__all_pages
+    [:div.flex-1.cp__all_pages.relative.p-6.sm:p-12.rounded-xl.color-level.page
      [:h1.title (t :all-pages)]
 
-     [:div.text-sm.ml-1.opacity-70.mb-4 (t :paginates/pages total-items)]
+     [:div.text-sm.opacity-70 (t :paginates/pages total-items)]
 
      (when current-repo
 
