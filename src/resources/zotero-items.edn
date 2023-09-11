@@ -2,7 +2,8 @@
   :fields
   #{"url" "artworkSize" "abstractNote" "libraryCatalog" "archive" "rights"
     "accessDate" "title" "date" "extra" "shortTitle" "artworkMedium"
-    "archiveLocation" "callNumber" "language"},
+    "archiveLocation" "callNumber" "language"
+    
   :creator-types
   [{:creator-type "artist", :primary true} {:creator-type "contributor"}]}
  {:item-type "attachment",
