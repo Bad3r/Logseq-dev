@@ -18,7 +18,7 @@ h1.title.whiteboard-dashboard-title {
 }
 
 .dashboard-card {
-  @apply rounded-lg flex flex-col gap-1 overflow-hidden font-medium;
+  @apply rounded-lg flex flex-col gap-1 font-medium;
   height: 300px;
 
   .dashboard-card-checkbox {
@@ -27,7 +27,7 @@ h1.title.whiteboard-dashboard-title {
     visibility: hidden;
     width: 24px;
     height: 24px;
-    transform: translateX(4px);
+    margin-right: 3px;
 
     &:focus-within {
       border-color: var(--ls-border-color);
@@ -146,6 +146,7 @@ input.tl-text-input {
   z-index: 2000;
   gap: 4px;
   line-height: 1.4;
+  max-width: 70%;
 }
 
 .whiteboard-page-title {
@@ -155,11 +156,6 @@ input.tl-text-input {
   border-radius: 8px;
   border: 1px solid transparent;
   background: var(--ls-secondary-background-color);
-
-  &-root {
-    max-width: 70%;
-    overflow: hidden;
-  }
 
   .page-title-sizer-wrapper {
     width: calc(100% - 20px);
