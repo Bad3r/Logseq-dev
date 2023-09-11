@@ -64,7 +64,7 @@
 }
 
 #main-content-container {
-  @apply p-4 sm:px-8;
+  @apply p-4 sm:px-8 sm:py-10;
 
   font-size: 1em;
 }
@@ -505,7 +505,8 @@ html[data-theme='dark'] {
 }
 
 .cp__sidebar-main-content {
-  width: 100%;
+  @apply w-full h-fit;
+
   max-width: var(--ls-main-content-max-width);
   flex: 1;
 }
