@@ -6,6 +6,7 @@
             ["buffer" :as buffer]
             ["diff-match-patch" :as google-diff]
             ["electron" :refer [app autoUpdater dialog ipcMain shell]]
+            ["electron-window-state" :as windowStateKeeper]
             ["fs" :as fs]
             ["fs-extra" :as fs-extra]
             ["os" :as os]
@@ -243,7 +244,7 @@
                                   (.toString (.readFileSync fs txid-path)))]
           (reader/read-string sync-meta))))
     (catch :default e
-      (js/console.debug "[read txid meta] #" root (.-message e)))))
+      (logger/error "[read txid meta] #" root (.-message e)))))
 
 (defmethod handle :inflateGraphsInfo [_win [_ graphs]]
   (if (seq graphs)
@@ -617,6 +618,10 @@
 
 (defmethod handle :window-close [^js win]
   (.close win))
+
+(defmethod handle :theme-loaded [^js win]
+  (.manage (windowStateKeeper) win)
+  (.show win))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; file-sync-rs-apis ;;

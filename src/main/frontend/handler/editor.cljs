@@ -16,6 +16,7 @@
             [frontend.fs :as fs]
             [frontend.fs.nfs :as nfs]
             [logseq.common.path :as path]
+            [frontend.extensions.pdf.utils :as pdf-utils]
             [frontend.handler.assets :as assets-handler]
             [frontend.handler.block :as block-handler]
             [frontend.handler.common :as common-handler]
@@ -196,7 +197,7 @@
 (defn open-block-in-sidebar!
   [block-id]
   (when block-id
-    (when-let [block (db/entity [:block/uuid block-id])]
+    (when-let [block (db/entity (if (number? block-id) block-id [:block/uuid block-id]))]
       (let [page? (nil? (:block/page block))]
         (state/sidebar-add-block!
          (state/get-current-repo)
@@ -352,7 +353,9 @@
         block (apply dissoc block db-schema/retract-attributes)]
     (profile
      "Save block: "
-     (let [original-uuid (:block/uuid (db/entity (:db/id block)))
+     (let [original-block (db/entity (:db/id block))
+           original-uuid (:block/uuid original-block)
+           original-props (:block/properties original-block)
            uuid-changed? (not= (:block/uuid block) original-uuid)
            block' (-> (wrap-parse-block block)
                       ;; :block/uuid might be changed when backspace/delete
@@ -364,7 +367,12 @@
                                                      :to original-uuid})))]
        (outliner-tx/transact!
         opts'
-        (outliner-core/save-block! block'))
+        (outliner-core/save-block! block')
+        ;; page properties changed
+        (when-let [page-name (and (:block/pre-block? block')
+                                  (not= original-props (:block/properties block'))
+                                  (some-> (:block/page block') :db/id (db-utils/pull) :block/name))]
+          (state/set-page-properties-changed! page-name)))
 
        ;; sanitized page name changed
        (when-let [title (get-in block' [:block/properties :title])]
@@ -2139,7 +2147,7 @@
                     sorted-blocks
                     (drop 1 sorted-blocks))]
        (when element-id
-         (insert-command! element-id "" format {}))
+         (insert-command! element-id "" format {:end-pattern commands/command-trigger}))
        (let [exclude-properties [:id :template :template-including-parent]
              content-update-fn (fn [content]
                                  (->> content
@@ -2161,15 +2169,21 @@
 
                          :else
                          true)]
-         (outliner-tx/transact!
-           {:outliner-op :insert-blocks
-            :created-from-journal-template? journal?}
-           (save-current-block!)
-           (let [result (outliner-core/insert-blocks! blocks'
-                                                      target
-                                                      (assoc opts
-                                                             :sibling? sibling?'))]
-             (edit-last-block-after-inserted! result))))))))
+         (try
+           (outliner-tx/transact!
+            {:outliner-op :insert-blocks
+             :created-from-journal-template? journal?}
+            (save-current-block!)
+            (let [result (outliner-core/insert-blocks! blocks'
+                                                       target
+                                                       (assoc opts
+                                                              :sibling? sibling?'))]
+              (edit-last-block-after-inserted! result)))
+           (catch :default ^js/Error e
+             (notification/show!
+              [:p.content
+               (util/format "Template insert error: %s" (.-message e))]
+              :error))))))))
 
 (defn template-on-chosen-handler
   [element-id]
@@ -2696,7 +2710,7 @@
             (delete-concat current-block)))
 
         :else
-        (delete-and-update 
+        (delete-and-update
           input current-pos (util/safe-inc-current-pos-from-start (.-value input) current-pos))))))
 
 (defn keydown-backspace-handler
@@ -3127,7 +3141,8 @@
   "shortcut copy action:
   * when in selection mode, copy selected blocks
   * when in edit mode but no text selected, copy current block ref
-  * when in edit mode with text selected, copy selected text as normal"
+  * when in edit mode with text selected, copy selected text as normal
+  * when text is selected on a PDF, copy the highlighted text"
   [e]
   (when-not (auto-complete?)
     (cond
@@ -3140,7 +3155,13 @@
             selected-end (util/get-selection-end input)]
         (save-current-block!)
         (when (= selected-start selected-end)
-          (copy-current-block-ref "ref"))))))
+          (copy-current-block-ref "ref")))
+
+      (and (state/get-current-pdf)
+           (.closest (.. js/window getSelection -baseNode -parentElement)  ".pdfViewer"))
+      (util/copy-to-clipboard!
+       (pdf-utils/fix-selection-text-breakline (.. js/window getSelection toString))
+       nil))))
 
 (defn shortcut-copy-text
   "shortcut copy action:

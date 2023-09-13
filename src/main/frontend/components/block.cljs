@@ -952,7 +952,7 @@
        (if (and (not paragraph?)
                 (mldoc/block-with-title? (ffirst ast)))
          (markup-elements-cp (assoc config :block/format format) ast)
-         (inline-text format macro-content)))
+         (inline-text config format macro-content)))
      [:span.warning {:title (str "Unsupported macro name: " name)}
       (macro->text name arguments)])])
 
@@ -1330,7 +1330,7 @@
                   (str "https://player.vimeo.com/video/" id)
 
                   [_ _ _ "bilibili.com" _ id & query]
-                  (str "https://player.bilibili.com/player.html?bvid=" id "&high_quality=1"
+                  (str "https://player.bilibili.com/player.html?bvid=" id "&high_quality=1&autoplay=0"
                        (when-let [page (second query)]
                          (str "&page=" page)))
 

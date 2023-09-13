@@ -28,12 +28,14 @@
    (let [win-state (windowStateKeeper (clj->js {:defaultWidth 980 :defaultHeight 700}))
          native-titlebar? (cfgs/get-item :window/native-titlebar?)
          win-opts  (cond->
-                     {:width                (.-width win-state)
+                     {:backgroundColor      "#fff" ; SEE https://www.electronjs.org/docs/latest/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
+                      :width                (.-width win-state)
                       :height               (.-height win-state)
                       :frame                (or mac? native-titlebar?)
                       :titleBarStyle        "hiddenInset"
                       :trafficLightPosition {:x 16 :y 16}
                       :autoHideMenuBar      (not mac?)
+                      :show                 false
                       :webPreferences
                       {:plugins                 true        ; pdf
                        :nodeIntegration         false
@@ -54,7 +56,6 @@
                      linux?
                      (assoc :icon (node-path/join js/__dirname "icons/logseq.png")))
          win       (BrowserWindow. (clj->js win-opts))]
-     (.manage win-state win)
      (.onBeforeSendHeaders (.. session -defaultSession -webRequest)
                            (clj->js {:urls (array "*://*.youtube.com/*")})
                            (fn [^js details callback]
