@@ -52,13 +52,13 @@
     "@electron-forge/maker-rpm": "^6.0.4",
     "@electron-forge/maker-squirrel": "^6.0.4",
     "@electron-forge/maker-zip": "^6.0.4",
-    "@electron/rebuild": "3.2.10",
+    "@electron/rebuild": "3.3.0",
     "electron": "26.2.2",
-    "electron-builder": "^22.11.7",
+    "electron-builder": "^24.6.4",
     "electron-forge-maker-appimage": "https://github.com/logseq/electron-forge-maker-appimage.git"
   },
   "resolutions": {
     "**/electron": "26.2.2",
-    "**/node-gyp": "9.0.0"
+    "**/node-gyp": "9.4.0"
   }
 }
