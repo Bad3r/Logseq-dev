@@ -116,7 +116,7 @@
         "fs-extra": "9.1.0",
         "fuse.js": "6.4.6",
         "grapheme-splitter": "1.0.4",
-        "graphology": "0.20.0",
+        "graphology": "0.25.4",
         "html2canvas": "^1.4.1",
         "ignore": "5.1.8",
         "inter-ui": "^3.19.3",
