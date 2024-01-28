@@ -290,10 +290,10 @@
   dependencies:
     tslib "^2.1.0"
 
-"@capacitor/filesystem@^5.0.0":
-  version "5.1.4"
-  resolved "https://registry.yarnpkg.com/@capacitor/filesystem/-/filesystem-5.1.4.tgz#6e3278f4c47c72416d586367889736b576113ef5"
-  integrity sha512-10EM1KvFMs+pTzxkcflspzxBWcX9sOnS9nTP5Afjr5hn4OxLrwTFySw2Z12Uv6jdN4OnhY3jXtDKXPljXvXILg==
+"@capacitor/filesystem@^5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@capacitor/filesystem/-/filesystem-5.2.0.tgz#6e4529eb059c85869ecc68643f25123dbe38768f"
+  integrity sha512-fyv+yWVFfglobPPveIRm4+ryMGI8vW27vjX63HDwB7K5fscSYajid+ie3qfwl2wkbPhlX8KTPes7IPij0lCmQg==
 
 "@capacitor/haptics@^5.0.0":
   version "5.0.6"
