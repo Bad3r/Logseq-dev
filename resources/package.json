@@ -31,7 +31,7 @@
     "dugite": "2.5.0",
     "electron-deeplink": "1.0.10",
     "electron-dl": "3.3.0",
-    "electron-log": "4.3.1",
+    "electron-log": "4.4.8",
     "electron-squirrel-startup": "1.0.0",
     "electron-window-state": "5.0.3",
     "extract-zip": "2.0.1",
