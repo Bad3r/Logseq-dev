@@ -6208,12 +6208,18 @@ postcss@^8.4.23:
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
 
-posthog-js@1.10.2:
-  version "1.10.2"
-  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.10.2.tgz#74d6c84f9675b65dfd4ff6f4051ed8d3cb974076"
-  integrity sha512-JNjWstHEexhj5CEKldSeYNyPJbtOvZQ3ZPL55fxU7+f+gTBL8RlOb8eFohCPYIk0VhMf2UM1rXxwVBOeMQQQFw==
+posthog-js@1.101.0:
+  version "1.101.0"
+  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.101.0.tgz#00e0fc6e164addd52b1738f087996bb0d6685943"
+  integrity sha512-mzwYSSWr9FdEMDeVpc+diLfc85+10r/LgELGtsW/HaYk+0du/GEql6szpqG8YXMMgb2dE4dnj0JICZFIJd7K3w==
   dependencies:
     fflate "^0.4.1"
+    preact "^10.19.3"
+
+preact@^10.19.3:
+  version "10.19.4"
+  resolved "https://registry.yarnpkg.com/preact/-/preact-10.19.4.tgz#735d331d5b1bd2182cc36f2ba481fd6f0da3fe3b"
+  integrity sha512-dwaX5jAh0Ga8uENBX1hSOujmKWgx9RtL80KaKUFLc6jb4vCEAc3EeZ0rnQO/FO4VgjfPMfoLFWnNG8bHuZ9VLw==
 
 pretty-hrtime@^1.0.0, pretty-hrtime@^1.0.3:
   version "1.0.3"
