@@ -30,7 +30,7 @@
     "diff-match-patch": "1.0.5",
     "dugite": "2.5.0",
     "electron-deeplink": "1.0.10",
-    "electron-dl": "3.3.0",
+    "electron-dl": "3.5.2",
     "electron-log": "4.3.1",
     "electron-squirrel-startup": "1.0.0",
     "electron-window-state": "5.0.3",
