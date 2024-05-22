@@ -283,10 +283,10 @@
     tslib "^2.4.0"
     xml2js "^0.5.0"
 
-"@capacitor/clipboard@^5.0.0":
-  version "5.0.6"
-  resolved "https://registry.yarnpkg.com/@capacitor/clipboard/-/clipboard-5.0.6.tgz#abc0101fb1b2780e829542b2d31f9eb1480b8ee8"
-  integrity sha512-VsokRAn+0HVWj6riSRdspczEfqFoHbrhS/XRhGoEPsj0uvYPSufy0Kb2dpnSqkeeElhh2Jvn8jmVAzII2XeR9w==
+"@capacitor/clipboard@^5.0.7":
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/@capacitor/clipboard/-/clipboard-5.0.7.tgz#7de43783603717b577f5cfb0fdfca2a7566a5187"
+  integrity sha512-N9JJruFB1mKNmA/+HPXyhcSugvEmYYfM4BibYB8lPqGc9QUY8WirU1+/5Keo8+lKJ6Sv9FVyHr2Sf8XFpwK7Tw==
 
 "@capacitor/core@^5.0.0":
   version "5.4.1"
