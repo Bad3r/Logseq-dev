@@ -3056,7 +3056,7 @@ fd-slicer@~1.1.0:
   dependencies:
     pend "~1.2.0"
 
-fflate@^0.4.1:
+fflate@^0.4.8:
   version "0.4.8"
   resolved "https://registry.yarnpkg.com/fflate/-/fflate-0.4.8.tgz#f90b82aefbd8ac174213abb338bd7ef848f0f5ae"
   integrity sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==
@@ -6226,12 +6226,18 @@ postcss@^8.4.23:
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
 
-posthog-js@1.10.2:
-  version "1.10.2"
-  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.10.2.tgz#74d6c84f9675b65dfd4ff6f4051ed8d3cb974076"
-  integrity sha512-JNjWstHEexhj5CEKldSeYNyPJbtOvZQ3ZPL55fxU7+f+gTBL8RlOb8eFohCPYIk0VhMf2UM1rXxwVBOeMQQQFw==
+posthog-js@1.141.0:
+  version "1.141.0"
+  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.141.0.tgz#bf85c935aa6b12a87f73f576adb6dd943888e675"
+  integrity sha512-EuVCq86izPX7+1eD/o87lF1HalRD6Nk5735w+FKZJ5KAPwoQjr5FCaL2V8Ed36DyQQz4gQj+PEx5i6DFKCiDzA==
   dependencies:
-    fflate "^0.4.1"
+    fflate "^0.4.8"
+    preact "^10.19.3"
+
+preact@^10.19.3:
+  version "10.22.1"
+  resolved "https://registry.yarnpkg.com/preact/-/preact-10.22.1.tgz#6a3589973fe0c6e53211091607d31f4b7b27334d"
+  integrity sha512-jRYbDDgMpIb5LHq3hkI0bbl+l/TQ9UnkdQ0ww+lp+4MMOdqaUYdFc5qeyP+IV8FAd/2Em7drVPeKdQxsiWCf/A==
 
 pretty-hrtime@^1.0.0, pretty-hrtime@^1.0.3:
   version "1.0.3"
