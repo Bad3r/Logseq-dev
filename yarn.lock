@@ -315,10 +315,10 @@
   resolved "https://registry.yarnpkg.com/@capacitor/keyboard/-/keyboard-5.0.6.tgz#04400e71b677abf9f1fc1ceaffd1211e7d864319"
   integrity sha512-9GewAa/y2Hwkdw/Be8MTdiAjrFZ7TPDKpR44M0Y/0QMnK+mBbgzcoZ/UkuumWv6e2F1IAI+VY5eYVQHDeZcRoA==
 
-"@capacitor/share@^5.0.0":
-  version "5.0.6"
-  resolved "https://registry.yarnpkg.com/@capacitor/share/-/share-5.0.6.tgz#76d2f6f13d1596999c49a0d99d21e7a63b8ecfef"
-  integrity sha512-/dVOW7kcuuD7hWB9Z1drArIpEk+5JCoMnMrAs2c7CLp3q5PeaXNJjTkGr6RJ1OtMhsHyXc6DAFwQ4frFkmZsgw==
+"@capacitor/share@^5.0.7":
+  version "5.0.8"
+  resolved "https://registry.yarnpkg.com/@capacitor/share/-/share-5.0.8.tgz#64d234827159f8ea279b71a222bc717a145ab727"
+  integrity sha512-Gj7z5Umf9blsROY+XzOdxepPQnbyn9AHEB9W1tVfl3QsYt6qEwoi+cgfE7ZOSAjcF/iERSnPlDNvK1tt6L5gcQ==
 
 "@capacitor/splash-screen@^5.0.0":
   version "5.0.6"
