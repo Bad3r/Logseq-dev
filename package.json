@@ -89,7 +89,7 @@
         "@capacitor/ios": "^5.0.0",
         "@capacitor/keyboard": "^5.0.0",
         "@capacitor/share": "^5.0.0",
-        "@capacitor/splash-screen": "^5.0.0",
+        "@capacitor/splash-screen": "^5.0.7",
         "@capacitor/status-bar": "^5.0.0",
         "@capawesome/capacitor-background-task": "^5.0.0",
         "@capgo/capacitor-navigation-bar": "^6.0.0",
