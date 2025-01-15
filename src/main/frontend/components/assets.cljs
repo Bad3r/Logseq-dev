@@ -2,6 +2,7 @@
   (:require
    [clojure.set :refer [difference]]
    [clojure.string :as string]
+   [logseq.shui.ui :as shui]
    [rum.core :as rum]
    [frontend.state :as state]
    [frontend.context.i18n :refer [t]]
@@ -13,7 +14,8 @@
    [frontend.config :as config]
    [frontend.components.select :as cp-select]
    [frontend.handler.notification :as notification]
-   [frontend.handler.assets :as assets-handler]))
+   [frontend.handler.assets :as assets-handler]
+   [frontend.hooks :as hooks]))
 
 (defn -get-all-formats
   []
@@ -31,7 +33,7 @@
   (let [[*input-val, set-*input-val] (rum/use-state (atom nil))
         [input-empty?, set-input-empty?] (rum/use-state true)]
 
-    (rum/use-effect!
+    (hooks/use-effect!
      #(set-input-empty? (string/blank? @*input-val))
      [@*input-val])
 
@@ -61,7 +63,7 @@
                     (when-not (string/blank? val)
                       (if-not (assets-handler/get-alias-by-name val)
                         (do (set-dir! val dir nil)
-                            (state/close-modal!))
+                            (shui/dialog-close!))
                         (notification/show!
                          (util/format "Alias name of [%s] already exists!" val) :warning))))]
 
@@ -129,7 +131,7 @@
                                (set-dir! name dir exts))))
 
         confirm-dir      (fn [dir set-dir!]
-                           (state/set-sub-modal!
+                           (shui/dialog-open!
                             #(confirm-dir-with-alias-name dir set-dir!)))]
 
     [:div.cp__assets-alias-directories
