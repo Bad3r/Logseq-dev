@@ -112,7 +112,7 @@
         "codemirror": "5.65.13",
         "d3-force": "3.0.0",
         "diff": "5.0.0",
-        "dompurify": "2.4.0",
+        "dompurify": "2.5.6",
         "electron": "28.3.1",
         "electron-dl": "3.3.0",
         "fs": "0.0.1-security",
